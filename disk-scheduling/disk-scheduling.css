@@ -1,0 +1,5 @@
+@import url('../shared.css');
+
+#seekCanvas { width:100%; height:auto; border:1px solid var(--border-subtle); border-radius:var(--r-md); background:var(--bg-elevated); }
+.trail { margin-top:var(--sp-3); display:flex; gap:6px; flex-wrap:wrap; }
+.trail .badge { min-height:44px; align-items:center; }

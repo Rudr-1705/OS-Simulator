@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disk Scheduling — OS Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/>
+  <link rel="stylesheet" href="./disk-scheduling.css"/>
+</head>
+<body>
+  <nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span class="nav-module-name">Disk Scheduling</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
+  <header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-green">Storage</span><span class="badge badge-gray">FCFS/SSTF/SCAN</span></div><h1 class="module-title">Disk Scheduling</h1><p class="module-desc">Animate head movement for common disk scheduling algorithms and compare seek behavior.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></div></header>
+  
+  <section class="theory-section" id="theoryContent" style="display:none">
+  <div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
+  <div class="concepts-grid">
+    <div class="concept-card"><div class="concept-term">Seek Time</div><div class="concept-def">Time taken to move the disk head to the target cylinder.</div></div>
+    <div class="concept-card"><div class="concept-term">FCFS</div><div class="concept-def">First-Come, First-Served. Simplest, but typically yields high seek times.</div></div>
+    <div class="concept-card"><div class="concept-term">SSTF</div><div class="concept-def">Shortest Seek Time First. Closer requests served first. May cause starvation.</div></div>
+    <div class="concept-card"><div class="concept-term">SCAN</div><div class="concept-def">Elevator algorithm. Sweeps end-to-end.</div></div>
+    <div class="concept-card"><div class="concept-term">C-SCAN</div><div class="concept-def">Circular SCAN. Only services requests while moving in one direction.</div></div>
+    <div class="concept-card"><div class="concept-term">LOOK / C-LOOK</div><div class="concept-def">Variants of SCAN/C-SCAN that reverse immediately after the last request instead of hitting the disk bounds.</div></div>
+  </div></div><div><h3 class="section-label">Performance Comparison</h3><div class="table-wrap">
+  <table><thead><tr><th>Algorithm</th><th>Average Seek Time</th><th>Fairness</th></tr></thead><tbody>
+    <tr><td>FCFS</td><td>High</td><td>Fair (no starvation)</td></tr>
+    <tr><td>SSTF</td><td>Low</td><td>Poor (starvation possible)</td></tr>
+    <tr><td>SCAN</td><td>Medium</td><td>Better than SSTF</td></tr>
+    <tr><td>C-SCAN / C-LOOK</td><td>Medium</td><td>Best (uniform wait times)</td></tr>
+  </tbody></table></div></div></div></div></section>
+
+  <main class="simulator-main container">
+    <section class="controls-panel">
+      <div class="controls-row">
+        <input class="form-input" id="reqInput" value="98,183,37,122,14,124,65,67"/>
+        <input class="form-input form-mono" id="headInput" type="number" value="53" style="width:90px"/>
+        <input class="form-input form-mono" id="sizeInput" type="number" value="199" style="width:90px"/>
+        <select class="form-select" id="dirSel" style="width:160px"><option value="up">Inside→Out</option><option value="down">Outside→In</option></select>
+      </div>
+      <div class="tabs algo-tabs">
+        <button class="tab-btn active" data-a="FCFS">FCFS</button>
+        <button class="tab-btn" data-a="SSTF">SSTF</button>
+        <button class="tab-btn" data-a="SCAN">SCAN</button>
+        <button class="tab-btn" data-a="CSCAN">C-SCAN</button>
+        <button class="tab-btn" data-a="LOOK">LOOK</button>
+        <button class="tab-btn" data-a="CLOOK">C-LOOK</button>
+      </div>
+      <div class="controls-row">
+        <button class="btn btn-primary" id="animBtn">▶ Animate</button>
+        <button class="btn btn-success" id="runBtn">Run</button>
+        <button class="btn btn-ghost" id="resetBtn">Reset</button>
+      </div>
+      <div class="speed-control"><label for="speedRange">Speed</label><input id="speedRange" type="range" min="1" max="5" value="3"/><span class="speed-label" id="speedLabel">3x</span></div>
+    </section>
+    <section class="controls-panel">
+      <canvas id="seekCanvas" width="980" height="420"></canvas>
+      <div id="sequenceTrail" class="trail"></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="totalSeek">0</div><div class="stat-label">Total Seek</div></div>
+        <div class="stat-card"><div class="stat-value" id="avgSeek">0</div><div class="stat-label">Avg Seek</div></div>
+        <div class="stat-card"><div class="stat-value" id="maxJump">0</div><div class="stat-label">Max Jump</div></div>
+        <div class="stat-card"><div class="stat-value" id="minJump">0</div><div class="stat-label">Min Jump</div></div>
+      </div>
+    </section>
+  </main>
+  <footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Disk Scheduling</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+  <div id="toast-container"></div>
+  <script src="../shared.js"></script>
+  <script src="./disk-scheduling.js"></script>
+</body>
+</html>
