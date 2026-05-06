@@ -1,0 +1,49 @@
+<!DOCTYPE html><html lang="en" data-theme="light"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Deadlock — OS Simulator</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/><link rel="stylesheet" href="./deadlock.css"/></head><body>
+<nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg><span class="nav-module-name">Deadlock</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
+<header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-red">Process</span><span class="badge badge-gray">Banker</span></div><h1 class="module-title">Deadlock</h1><p class="module-desc">Explore deadlock via resource allocation graph cycles and Banker's safety analysis.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div></header>
+
+<section class="theory-section" id="theoryContent" style="display:none">
+<div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
+<div class="concepts-grid">
+  <div class="concept-card"><div class="concept-term">Deadlock</div><div class="concept-def">A situation where processes are blocked forever, waiting for resources held by each other.</div></div>
+  <div class="concept-card"><div class="concept-term">Mutual Exclusion</div><div class="concept-def">At least one resource must be held in a non-sharable mode.</div></div>
+  <div class="concept-card"><div class="concept-term">Hold and Wait</div><div class="concept-def">A process holding at least one resource is waiting to acquire additional resources held by others.</div></div>
+  <div class="concept-card"><div class="concept-term">No Preemption</div><div class="concept-def">Resources cannot be forcibly removed from the processes holding them.</div></div>
+  <div class="concept-card"><div class="concept-term">Circular Wait</div><div class="concept-def">A closed chain of processes exists, such that each process holds at least one resource needed by the next process in the chain.</div></div>
+  <div class="concept-card"><div class="concept-term">Safe State</div><div class="concept-def">A state where the system can allocate resources to each process in some order and still avoid deadlock.</div></div>
+</div></div><div><h3 class="section-label">Deadlock Handling Strategies</h3><div class="table-wrap">
+<table><thead><tr><th>Strategy</th><th>Description</th><th>Algorithm example</th></tr></thead><tbody>
+  <tr><td>Prevention</td><td>Ensure at least one of the 4 necessary conditions never holds.</td><td>Resource ordering, conservative allocation</td></tr>
+  <tr><td>Avoidance</td><td>Dynamically check resource requests to ensure safe state.</td><td>Banker's Algorithm</td></tr>
+  <tr><td>Detection</td><td>Allow deadlock, detect it, and recover.</td><td>Wait-for / RAG Cycle detection</td></tr>
+  <tr><td>Ignorance</td><td>Ignore the problem completely.</td><td>Ostrich Algorithm (common in many OS)</td></tr>
+</tbody></table></div></div></div></div></section>
+
+<main class="simulator-main container">
+  <div class="controls-panel"><div class="tabs deadlock-tabs" style="max-width:400px"><button class="tab-btn active" data-tab="rag">Resource Allocation Graph</button><button class="tab-btn" data-tab="banker">Banker's Algorithm</button></div></div>
+  <div class="deadlock-tab-content" id="dl-rag">
+    <div class="card" style="margin-bottom:1rem">
+      <p style="color:var(--text-secondary);font-size:.88rem">A Resource Allocation Graph shows which processes hold or request resources. A cycle indicates potential deadlock.</p>
+    </div>
+    <div class="card">
+      <canvas id="ragCanvas" style="width:100%;height:320px;border-radius:8px;background:var(--bg-sunken)"></canvas>
+      <div class="controls-row" style="margin-top:1rem">
+        <button class="btn btn-secondary btn-sm" id="addProcBtn">Add Process</button>
+        <button class="btn btn-secondary btn-sm" id="addResBtn">Add Resource</button>
+        <button class="btn btn-primary btn-sm" id="detectBtn">Detect Cycle</button>
+        <button class="btn btn-ghost btn-sm" id="ragResetBtn">Reset</button>
+        <span id="ragStatus"></span>
+      </div>
+      <div class="controls-row" style="margin-top:0.5rem; display:flex; gap:0.5rem; align-items:center;">
+        <input type="text" id="edgeFrom" class="form-input form-mono" placeholder="From (P0/R0)" style="width:110px">
+        <span style="font-size:1.2rem; color:var(--text-muted)">→</span>
+        <input type="text" id="edgeTo" class="form-input form-mono" placeholder="To (P1/R0)" style="width:110px">
+        <button class="btn btn-secondary btn-sm" id="addEdgeBtn">Add Edge</button>
+      </div>
+    </div>
+  </div>
+  <div class="deadlock-tab-content" id="dl-banker" style="display:none"><div class="controls-panel"><div class="form-row" style="margin-bottom:1rem"><div class="form-group"><label class="form-label">Processes (n)</label><input id="bkN" type="number" class="form-input form-mono" min="1" max="8" value="4" style="width:80px"></div><div class="form-group"><label class="form-label">Resource Types (m)</label><input id="bkM" type="number" class="form-input form-mono" min="1" max="5" value="3" style="width:80px"></div><button class="btn btn-ghost btn-sm" id="bkRandom" style="align-self:flex-end">Random</button><button class="btn btn-primary" id="bkRun" style="align-self:flex-end">Find Safe Sequence</button></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;flex-wrap:wrap"><div><div class="section-label">Allocation Matrix</div><div id="allocMatrix"></div></div><div><div class="section-label">Max Matrix</div><div id="maxMatrix"></div></div><div><div class="section-label">Available Vector</div><div id="availRow" style="display:flex;gap:4px"></div></div></div></div><div class="card" style="margin-top:1rem"><div class="section-label">Need Matrix (Max - Allocation)</div><div id="needMatrix" style="margin-bottom:1rem"></div><div id="bankersResult" style="min-height:60px"></div></div></div>
+  <div id="log" style="display:none"></div>
+</main>
+<footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Deadlock</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+<div id="toast-container"></div><script src="../shared.js"></script><script src="./deadlock.js"></script></body></html>
