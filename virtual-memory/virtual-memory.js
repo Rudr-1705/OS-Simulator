@@ -284,12 +284,6 @@ function renderThrashing(states, refs, frames) {
 
 
 
-    /*
-      THRASHING REGION
-    */
-
-
-
     ctx.fillStyle =
         'rgba(239,68,68,0.08)';
 
@@ -305,12 +299,6 @@ function renderThrashing(states, refs, frames) {
 
         H
     );
-
-
-
-    /*
-      DRAW CURVE
-    */
 
 
 
@@ -347,12 +335,6 @@ function renderThrashing(states, refs, frames) {
 
 
     ctx.stroke();
-
-
-
-    /*
-      LABELS
-    */
 
 
 
@@ -447,12 +429,6 @@ function renderThrashing(states, refs, frames) {
 
 
 
-    /*
-      THRASHING LABEL
-    */
-
-
-
     ctx.fillStyle = '#ef4444';
 
 
@@ -471,29 +447,165 @@ function renderThrashing(states, refs, frames) {
 
 
 
+// =====================================
+// INTERACTIVE SWAP SPACE
+// =====================================
+
+let swapState = {
+
+    physFrames: 4,
+
+    physPages: [],
+
+    swapPages: [],
+
+    swapLog: []
+};
+
+
+
+
+
 function renderSwap(states, frameCount) {
 
     if (!states.length) return;
 
 
 
-    const final =
-        states[states.length - 1];
+    if (swapState.physPages.length === 0) {
+
+        const final =
+            states[states.length - 1];
 
 
 
-    const phys =
-        final.frames.filter(x => x !== null);
+        swapState.physFrames =
+            frameCount;
 
 
 
-    const all =
-        [...new Set(states.map(s => s.page))];
+        swapState.physPages =
+            final.frames.filter(
+                x => x !== null
+            );
 
 
 
-    const swap =
-        all.filter(p => !phys.includes(p));
+        const allPages =
+            [...new Set(
+                states.map(s => s.page)
+            )];
+
+
+
+        swapState.swapPages =
+            allPages.filter(
+                p => !swapState.physPages.includes(p)
+            );
+    }
+
+
+
+    const physHtml = swapState.physPages.map(p => `
+
+        <div
+            class="frame-box"
+            style="
+                min-width:60px;
+                cursor:pointer
+            "
+
+            onclick="swapOut(${p})"
+
+            title="Click to swap out">
+
+            <div style="
+                font-size:.6rem;
+                color:var(--text-muted)
+            ">
+                P${p}
+            </div>
+
+            <div
+                class="frame-val"
+                style="font-size:1.1rem">
+
+                ${p}
+
+            </div>
+
+        </div>
+
+    `).join('');
+
+
+
+    const swapHtml = swapState.swapPages.map(p => `
+
+        <div
+            class="frame-box"
+
+            style="
+                min-width:60px;
+                cursor:pointer;
+                opacity:.6;
+                border-style:dashed
+            "
+
+            onclick="swapIn(${p})"
+
+            title="Click to swap in">
+
+            <div style="
+                font-size:.6rem;
+                color:var(--text-muted)
+            ">
+                P${p}
+            </div>
+
+            <div
+                class="frame-val"
+                style="font-size:1.1rem">
+
+                ${p}
+
+            </div>
+
+        </div>
+
+    `).join('');
+
+
+
+    const logHtml = swapState.swapLog
+        .slice(-8)
+        .map(l => `
+
+            <div style="
+                color:${l.dir === 'in'
+                    ? 'var(--accent-green)'
+                    : 'var(--accent-orange)'};
+
+                font-family:var(--font-mono);
+
+                font-size:.75rem;
+
+                border-left:2px solid currentColor;
+
+                padding-left:6px;
+
+                margin-bottom:3px
+            ">
+
+                ${l.dir === 'in'
+                    ? 'SWAP IN'
+                    : 'SWAP OUT'}
+
+                page ${l.page}
+
+            </div>
+
+        `).join('');
 
 
 
@@ -501,33 +613,50 @@ function renderSwap(states, frameCount) {
 
         <div style="
             display:grid;
-            grid-template-columns:1fr 1fr;
-            gap:2rem
+            grid-template-columns:1fr auto 1fr;
+            gap:1.5rem;
+            align-items:start
         ">
 
             <div>
 
-                <h3>
+                <div
+                    class="section-label"
+                    style="margin-bottom:.5rem">
+
                     Physical Memory
-                    (${phys.length}/${frameCount})
-                </h3>
+                    (${swapState.physPages.length}/${swapState.physFrames} frames)
+
+                </div>
 
                 <div style="
                     display:flex;
-                    gap:10px;
                     flex-wrap:wrap;
-                    margin-top:12px
+                    gap:.5rem;
+                    min-height:80px;
+                    background:var(--bg-elevated);
+                    border-radius:var(--r-md);
+                    padding:.75rem
                 ">
 
-                    ${phys.map(p => `
+                    ${physHtml || `
+                        <span style="
+                            color:var(--text-muted);
+                            font-size:.8rem
+                        ">
+                            Empty
+                        </span>
+                    `}
 
-                        <div class="page-box hit">
+                </div>
 
-                            ${p}
+                <div style="
+                    font-size:.7rem;
+                    color:var(--text-muted);
+                    margin-top:.35rem
+                ">
 
-                        </div>
-
-                    `).join('')}
+                    Click a page to swap it out
 
                 </div>
 
@@ -535,28 +664,91 @@ function renderSwap(states, frameCount) {
 
 
 
+            <div style="
+                display:flex;
+                flex-direction:column;
+                align-items:center;
+                justify-content:center;
+                padding-top:1.5rem;
+                gap:.35rem
+            ">
+
+                <svg
+                    width="24"
+                    height="48"
+                    viewBox="0 0 24 48"
+                    fill="none"
+                    stroke="var(--accent-blue)"
+                    stroke-width="2"
+                    stroke-linecap="round">
+
+                    <path d="
+                        M12 4L4 12
+                        M12 4L20 12
+                        M12 4L12 22
+                    "/>
+
+                    <path d="
+                        M12 44L4 36
+                        M12 44L20 36
+                        M12 44L12 26
+                    "/>
+
+                </svg>
+
+                <span style="
+                    font-size:.7rem;
+                    color:var(--text-muted)
+                ">
+
+                    page fault
+
+                </span>
+
+            </div>
+
+
+
             <div>
 
-                <h3>
+                <div
+                    class="section-label"
+                    style="margin-bottom:.5rem">
+
                     Swap Space
-                </h3>
+                    (${swapState.swapPages.length} pages)
+
+                </div>
 
                 <div style="
                     display:flex;
-                    gap:10px;
                     flex-wrap:wrap;
-                    margin-top:12px
+                    gap:.5rem;
+                    min-height:80px;
+                    background:var(--bg-sunken);
+                    border-radius:var(--r-md);
+                    padding:.75rem;
+                    border:1px dashed var(--border-default)
                 ">
 
-                    ${swap.map(p => `
+                    ${swapHtml || `
+                        <span style="
+                            color:var(--text-muted);
+                            font-size:.8rem
+                        ">
+                            Empty
+                        </span>
+                    `}
 
-                        <div class="page-box fault">
+                </div>
 
-                            ${p}
+                <div style="
+                    font-size:.7rem;
+                    color:var(--text-muted);
+                    margin-top:.35rem
+                ">
 
-                        </div>
-
-                    `).join('')}
+                    Click a page to swap it in
 
                 </div>
 
@@ -566,45 +758,150 @@ function renderSwap(states, frameCount) {
 
 
 
-        <div style="margin-top:24px">
+        <div style="margin-top:1rem">
 
-            <h3>
-                Swap Activity
-            </h3>
+            <div
+                class="section-label"
+                style="margin-bottom:.5rem">
 
-            <div style="margin-top:12px">
+                Swap Log
 
-                ${states
+            </div>
 
-                    .filter(s => s.event === 'fault')
+            <div style="
+                background:var(--bg-sunken);
+                border-radius:var(--r-md);
+                padding:.75rem;
+                min-height:60px;
+                max-height:160px;
+                overflow-y:auto
+            ">
 
-                    .map(s => `
-
-                        <div style="
-                            margin-bottom:8px;
-                            padding-bottom:6px;
-                            border-bottom:1px solid var(--border-subtle)
-                        ">
-
-                            Page Fault on
-                            ${s.page}
-
-                            ${s.replaced !== null
-
-                                ? `→ Replaced ${s.replaced}`
-
-                                : ''
-                            }
-
-                        </div>
-
-                    `).join('')}
+                ${logHtml || `
+                    <span style="
+                        color:var(--text-muted);
+                        font-size:.78rem
+                    ">
+                        Click pages above to simulate swapping
+                    </span>
+                `}
 
             </div>
 
         </div>
     `;
 }
+
+
+
+
+
+window.swapOut = function(page) {
+
+    const idx =
+        swapState.physPages.indexOf(page);
+
+
+
+    if (idx === -1) return;
+
+
+
+    swapState.physPages.splice(idx, 1);
+
+    swapState.swapPages.push(page);
+
+    swapState.swapLog.push({
+
+        dir: 'out',
+
+        page
+    });
+
+
+
+    showToast(
+
+        `Page ${page} swapped out to disk`,
+
+        'warning'
+    );
+
+
+
+    renderSwap(
+        currentStates,
+        swapState.physFrames
+    );
+};
+
+
+
+
+
+window.swapIn = function(page) {
+
+    if (
+
+        swapState.physPages.length >=
+        swapState.physFrames
+
+    ) {
+
+        showToast(
+
+            'Physical memory full — swap something out first',
+
+            'error'
+        );
+
+        return;
+    }
+
+
+
+    const idx =
+        swapState.swapPages.indexOf(page);
+
+
+
+    if (idx === -1) return;
+
+
+
+    swapState.swapPages.splice(idx, 1);
+
+    swapState.physPages.push(page);
+
+    swapState.swapLog.push({
+
+        dir: 'in',
+
+        page
+    });
+
+
+
+    showToast(
+
+        `Page ${page} swapped in from disk`,
+
+        'success'
+    );
+
+
+
+    renderSwap(
+        currentStates,
+        swapState.physFrames
+    );
+};
+
+
+
+
+
+let currentStates = [];
 
 
 
@@ -661,18 +958,26 @@ function runSimulation() {
 
 
 
-    const states =
+    currentStates =
         simulateDemandPaging(refs, frames);
 
 
 
-    renderDemand(states);
+    swapState.physPages = [];
+
+    swapState.swapPages = [];
+
+    swapState.swapLog = [];
+
+
+
+    renderDemand(currentStates);
 
     renderWorkingSet(refs, windowSize);
 
-    renderThrashing(states, refs, frames);
+    renderThrashing(currentStates, refs, frames);
 
-    renderSwap(states, frames);
+    renderSwap(currentStates, frames);
 }
 
 
