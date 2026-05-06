@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>File System Simulation — OS Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="../shared.css"/>
+<link rel="stylesheet" href="./file-organization.css"/>
+<style>
+/* ── DAG Simulator Specific Styles ── */
+.dir-type-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.25rem}
+.dir-tab{padding:.35rem .9rem;border-radius:var(--r-full);border:1px solid var(--border-default);background:var(--bg-elevated);font-size:.78rem;cursor:pointer;transition:all .15s}
+.dir-tab.active{background:var(--accent-blue);color:#fff;border-color:var(--accent-blue)}
+.fs-canvas-wrap{position:relative;overflow:hidden;border-radius:var(--r-md);background:var(--bg-sunken);border:1px solid var(--border-subtle)}
+.fs-canvas-wrap canvas{display:block;width:100%;height:auto}
+.node-pill{display:inline-flex;align-items:center;gap:.3rem;padding:.2rem .55rem;border-radius:var(--r-full);font-size:.72rem;font-family:var(--font-mono);border:1px solid var(--border-default);background:var(--bg-elevated);cursor:default}
+.node-pill.dir{border-color:var(--accent-blue);color:var(--accent-blue)}
+.node-pill.file{border-color:var(--accent-green);color:var(--accent-green)}
+.node-pill.shared{border-color:var(--accent-purple);color:var(--accent-purple)}
+.ref-badge{display:inline-flex;align-items:center;justify-content:center;min-width:1.2rem;height:1.2rem;border-radius:9999px;background:var(--accent-purple);color:#fff;font-size:.65rem;font-weight:700;margin-left:.2rem}
+.op-row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:flex-end;padding:.9rem;background:var(--bg-elevated);border-radius:var(--r-md);border:1px solid var(--border-subtle);margin-bottom:.75rem}
+.op-row .form-label{font-size:.72rem}
+.sim-two-col{display:grid;grid-template-columns:1fr 320px;gap:1.25rem}
+@media(max-width:900px){.sim-two-col{grid-template-columns:1fr}}
+.legend-row{display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:.75rem;font-size:.74rem}
+.legend-item{display:flex;align-items:center;gap:.35rem}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.75rem}
+.stat-box{background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:.6rem .8rem;text-align:center}
+.stat-val{font-size:1.4rem;font-weight:700;font-family:var(--font-mono);color:var(--accent-blue);line-height:1}
+.stat-lbl{font-size:.68rem;color:var(--text-muted);margin-top:.2rem}
+.node-list{display:flex;flex-direction:column;gap:.4rem;max-height:200px;overflow-y:auto}
+</style>
+</head>
+<body>
+
+<nav class="topnav">
+  <a href="../index.html" class="nav-back">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>
+    OS Simulator
+  </a>
+  <div class="nav-center">
+    <svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+      <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
+    </svg>
+    <span class="nav-module-name">File System Simulation</span>
+  </div>
+  <div class="nav-actions">
+    <button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      <span class="theory-toggle-label">Theory</span>
+    </button>
+    <button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">
+      <svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+    </button>
+  </div>
+</nav>
+
+<header class="module-header">
+  <div class="module-header-content">
+    <div class="module-header-meta">
+      <span class="badge badge-blue">Storage</span>
+      <span class="badge badge-gray">Single-Level / Two-Level / Tree / DAG</span>
+    </div>
+    <h1 class="module-title">File System Simulation</h1>
+    <p class="module-desc">Simulate directory structures and file sharing using DAG-based file system models.</p>
+  </div>
+  <div class="module-header-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+      <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v6c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/>
+      <path d="M3 11v6c0 1.66 4.03 3 9 3s9-1.34 9-3v-6"/>
+    </svg>
+  </div>
+</header>
+
+<!-- Theory Section -->
+<section class="theory-section" id="theoryContent" style="display:none">
+  <div class="container">
+    <div class="theory-grid">
+      <div>
+        <h3 class="section-label">Key Concepts</h3>
+        <div class="concepts-grid">
+          <div class="concept-card"><div class="concept-term">Single-Level</div><div class="concept-def">One directory for all files. Simple but prone to name conflicts. No hierarchy or file sharing.</div></div>
+          <div class="concept-card"><div class="concept-term">Two-Level</div><div class="concept-def">Master directory with per-user sub-directories. Avoids name conflicts across users. Limited organisation.</div></div>
+          <div class="concept-card"><div class="concept-term">Tree-Structured</div><div class="concept-def">Full hierarchy with nested subdirectories. Each file has exactly one parent. No native file sharing.</div></div>
+          <div class="concept-card"><div class="concept-term">DAG (Directed Acyclic Graph)</div><div class="concept-def">Files may have multiple parent directories via hard links. Enables sharing without duplication. Requires reference counting for safe deletion.</div></div>
+          <div class="concept-card"><div class="concept-term">Reference Count</div><div class="concept-def">Tracks how many directories point to a shared file. File is only deleted from disk when count reaches zero.</div></div>
+          <div class="concept-card"><div class="concept-term">Hard Link</div><div class="concept-def">A directory entry pointing to the same inode as another entry. Both names refer to identical physical data on disk.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<main class="simulator-main container">
+
+  <!-- Mode Selector -->
+  <div class="controls-panel" style="margin-bottom:1.25rem">
+    <div class="form-group" style="margin-bottom:0">
+      <label class="form-label">Directory Structure Model</label>
+      <div class="dir-type-tabs" id="structureTabs">
+        <button class="dir-tab active" data-model="single">Single-Level</button>
+        <button class="dir-tab" data-model="two">Two-Level</button>
+        <button class="dir-tab" data-model="tree">Tree</button>
+        <button class="dir-tab active-last" data-model="dag">DAG (File Sharing)</button>
+      </div>
+    </div>
+    <p id="modelDesc" class="section-label" style="margin-top:.5rem;font-size:.78rem;color:var(--text-muted)">One flat directory; all files coexist. File names must be globally unique.</p>
+  </div>
+
+  <!-- Operation Controls -->
+  <div id="opControls"></div>
+
+  <!-- Main Sim Area -->
+  <div class="sim-two-col">
+    <!-- Canvas / Visualisation -->
+    <div class="card" style="padding:1rem">
+      <div class="section-label" style="margin-bottom:.6rem">Structure Visualisation</div>
+      <div class="legend-row" id="legend"></div>
+      <div class="fs-canvas-wrap">
+        <canvas id="fsCanvas" width="640" height="420"></canvas>
+      </div>
+    </div>
+
+    <!-- Right Panel: Stats + Log -->
+    <div style="display:flex;flex-direction:column;gap:1rem">
+      <div class="card" style="padding:1rem">
+        <div class="section-label" style="margin-bottom:.6rem">System Stats</div>
+        <div class="stats-grid" id="statsGrid">
+          <div class="stat-box"><div class="stat-val" id="statDirs">0</div><div class="stat-lbl">Directories</div></div>
+          <div class="stat-box"><div class="stat-val" id="statFiles">0</div><div class="stat-lbl">Files</div></div>
+          <div class="stat-box"><div class="stat-val" id="statLinks">0</div><div class="stat-lbl">Hard Links</div></div>
+          <div class="stat-box"><div class="stat-val" id="statShared">0</div><div class="stat-lbl">Shared Files</div></div>
+        </div>
+        <div class="section-label" style="margin-bottom:.4rem;font-size:.7rem">Nodes</div>
+        <div class="node-list" id="nodeList"></div>
+      </div>
+      <div class="card" style="padding:1rem;flex:1">
+        <div class="section-label" style="margin-bottom:.4rem">Operation Log</div>
+        <div id="log" class="log" style="height:220px"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="module-footer">
+  <div class="container footer-inner">
+    <div class="footer-left">
+      <a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a>
+      <span style="color:var(--border-default)">·</span>
+      <span style="font-size:.78rem;color:var(--text-muted)">File System Simulation</span>
+    </div>
+    <nav class="footer-nav"><a href="../index.html">All Modules</a></nav>
+  </div>
+</footer>
+
+<div id="toast-container"></div>
+<script src="../shared.js"></script>
+<script src="./file-organization.js"></script>
+</body>
+</html>
