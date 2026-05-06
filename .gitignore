@@ -1,0 +1,29 @@
+# OS junk
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editors / IDEs
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs & temp
+*.log
+*.tmp
+*.temp
+.cache/
+
+# Python (local server / tooling)
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.env.local
+.env.*.local
+
+# Optional: uncomment if you use Node for tooling
+# node_modules/

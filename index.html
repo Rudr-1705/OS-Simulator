@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OS Simulator — NITK Surathkal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="./shared.css"/>
+  <link rel="stylesheet" href="./style.css"/>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-header">
+    <nav class="site-nav container">
+      <a href="./" class="wordmark"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a>
+      <div class="site-nav-links">
+        <a href="#modules">Modules</a>
+        <a href="#about">About</a>
+        <a href="https://github.com/" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+      <button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">
+        <svg id="themeIcon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </nav>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="container hero-inner">
+      <div class="hero-left">
+        <div class="hero-label">
+          <span class="label-pip"></span>
+          NITK Surathkal &nbsp;·&nbsp; CSE OS Lab
+        </div>
+        <h1 class="hero-heading">
+          Operating<br/>
+          <em>System</em><br/>
+          Simulator
+        </h1>
+      </div>
+      <div class="hero-right">
+        <p class="hero-body">
+          17 interactive modules covering every core OS concept — from CPU scheduling to cache simulation. Visualize algorithms as they run.
+        </p>
+        <div class="hero-actions">
+          <a href="#modules" class="btn-primary-dark">
+            Explore Modules
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </a>
+          <a href="https://github.com/" target="_blank" class="btn-ghost-link">Source Code</a>
+        </div>
+        <div class="hero-stats">
+          <div class="hs-item">
+            <span class="hs-num" data-target="17">0</span>
+            <span class="hs-label">Modules</span>
+          </div>
+          <div class="hs-sep"></div>
+          <div class="hs-item">
+            <span class="hs-num" data-target="25">0</span>
+            <span class="hs-label">Algorithms</span>
+          </div>
+          <div class="hs-sep"></div>
+          <div class="hs-item">
+            <span class="hs-num" data-target="100" data-suffix="%">0</span>
+            <span class="hs-label">Interactive</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MODULES -->
+  <section id="modules" class="modules-section">
+    <div class="container">
+      <div class="modules-header">
+        <div>
+          <div class="section-eyebrow">// modules</div>
+          <h2 class="section-heading">Pick a concept,<br/><em>start exploring.</em></h2>
+        </div>
+        <div class="modules-controls">
+          <div class="filter-pills" role="group" aria-label="Filter modules">
+            <button class="pill active" onclick="filterModules('all',event)">All</button>
+            <button class="pill" onclick="filterModules('core',event)">Core Lab</button>
+            <button class="pill" onclick="filterModules('extra',event)">Extra</button>
+            <button class="pill" onclick="filterModules('process',event)">Process</button>
+            <button class="pill" onclick="filterModules('memory',event)">Memory</button>
+            <button class="pill" onclick="filterModules('storage',event)">Storage</button>
+          </div>
+          <div class="search-box">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="search-input" id="moduleSearch" type="text" placeholder="Search..." oninput="searchModules(this.value)"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="modules-grid" id="modulesGrid"></div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about" class="about-section">
+    <div class="container about-inner">
+      <div class="about-left">
+        <div class="section-eyebrow">// about</div>
+        <h2 class="about-heading">Built to make OS concepts tangible.</h2>
+      </div>
+      <div class="about-right">
+        <p>An open-source OS concepts simulator built with pure HTML, CSS, and JavaScript — no frameworks, no build tools. Deploys directly on GitHub Pages.</p>
+        <p>Built as a second-year CSE project at NITK Surathkal. Every module is algorithmically correct and fully interactive.</p>
+        <div class="about-chips">
+          <span>Pure HTML/CSS/JS</span>
+          <span>GitHub Pages</span>
+          <span>No frameworks</span>
+          <span>Open Source</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="container ftr-inner">
+      <span class="wordmark"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></span>
+      <span class="ftr-meta">NITK Surathkal · CSE · OS Simulator</span>
+      <div class="ftr-links">
+        <a href="#modules">Modules</a>
+        <a href="https://github.com/" target="_blank">GitHub</a>
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast-container"></div>
+  <script src="./shared.js"></script>
+  <script src="./main.js"></script>
+</body>
+</html>
