@@ -1,0 +1,68 @@
+@import url('../shared.css');
+
+.viz {
+  min-height: 220px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  padding: 12px;
+}
+
+.page-box {
+  display: inline-flex;
+  min-width: 42px;
+  min-height: 42px;
+  border: 1px solid var(--border-default);
+  border-radius: 6px;
+  align-items: center;
+  justify-content: center;
+  margin: 2px;
+  font-family: var(--font-mono);
+}
+
+.hit {
+  background: rgba(16,185,129,.18);
+  border-color: #10b981;
+}
+
+.fault {
+  background: rgba(239,68,68,.18);
+  border-color: #ef4444;
+}
+
+.frame-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 60px;
+  min-height: 60px;
+  border-radius: 8px;
+  border: 1px solid var(--border-default);
+  background: var(--bg-elevated);
+}
+
+.stats-row {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stat-card {
+  flex: 1;
+  padding: .9rem;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-subtle);
+}
+
+.stat-label {
+  font-size: .75rem;
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: .3rem;
+}
