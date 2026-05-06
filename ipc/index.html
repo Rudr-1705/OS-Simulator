@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Inter-Process Communication — OS Simulator</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/><link rel="stylesheet" href="./ipc.css"/></head>
+<body>
+<nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg><span class="nav-module-name">Inter-Process Communication</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
+<header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-blue">Process</span><span class="badge badge-gray">Pipes/Queues/SHM</span></div><h1 class="module-title">Inter-Process Communication</h1><p class="module-desc">Normally, processes run in isolated memory spaces and cannot directly access each other's data. Inter-process communication (IPC) provides controlled ways for processes to exchange data, synchronize execution, and coordinate tasks. Explore how pipes, message queues, shared memory, and signals make that coordination possible.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg></div></header>
+<section class="theory-section" id="theoryContent" style="display:none">
+<div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
+<div class="concepts-grid">
+  <div class="concept-card"><div class="concept-term">Pipe</div><div class="concept-def">Unidirectional byte stream between related processes. Anonymous, kernel-buffered. Created with pipe().</div></div>
+  <div class="concept-card"><div class="concept-term">Message Queue</div><div class="concept-def">Allows passing typed, structured messages. Supports priority ordering. Persists until deleted.</div></div>
+  <div class="concept-card"><div class="concept-term">Shared Memory</div><div class="concept-def">Fastest IPC — processes map same physical memory. Requires explicit synchronization (semaphores).</div></div>
+  <div class="concept-card"><div class="concept-term">Signal</div><div class="concept-def">Asynchronous notification to a process. Very limited data (just the signal number). Used for control.</div></div>
+  <div class="concept-card"><div class="concept-term">Blocking</div><div class="concept-def">Reader blocks when pipe empty; writer blocks when pipe full. Kernel suspends process until data available.</div></div>
+  <div class="concept-card"><div class="concept-term">Named Pipe (FIFO)</div><div class="concept-def">Like pipe but has a filesystem path. Allows IPC between unrelated processes.</div></div>
+</div></div></div></div></section>
+<main class="simulator-main container">
+  <div class="controls-panel" style="margin-bottom:1.5rem">
+    <div class="tabs ipc-tabs" style="max-width:500px">
+      <button class="tab-btn active" data-tab="pipe">Pipes</button>
+      <button class="tab-btn" data-tab="mq">Message Queue</button>
+      <button class="tab-btn" data-tab="shm">Shared Memory</button>
+      <button class="tab-btn" data-tab="signals">Signals</button>
+    </div>
+  </div>
+
+  <div class="ipc-tab-content" id="ipc-pipe">
+    <div class="card ipc-detail-card">
+      <div class="ipc-detail-head">
+        <h2 class="ipc-detail-title">pipe()</h2>
+        <span class="badge badge-blue">IPC</span>
+      </div>
+      <div class="ipc-code ipc-syntax">int pipe(int pipefd[2]);</div>
+      <p class="ipc-detail-copy">Pipes create a kernel-managed byte stream between a writer and a reader. The read end is <span class="mono">pipefd[0]</span>, the write end is <span class="mono">pipefd[1]</span>, and bytes move in FIFO order through a fixed-size buffer.</p>
+      <div class="ipc-param-block">
+        <div class="section-label">Parameters</div>
+        <div class="ipc-param-list">
+          <div class="ipc-param-item"><span class="mono">pipefd[2]</span> array where the kernel stores the two file descriptors, with index <span class="mono">0</span> for reading and <span class="mono">1</span> for writing.</div>
+        </div>
+      </div>
+      <div class="ipc-overview-grid">
+        <div class="ipc-command-card">
+          <div class="section-label">System Calls Used</div>
+          <div class="ipc-code">write(pipefd[1], buf, n);
+read(pipefd[0], buf, n);</div>
+          <p>The writer pushes bytes into the pipe and the reader removes them in the same order. If the pipe is empty, reads block. If it is full, writes block.</p>
+        </div>
+        <div class="ipc-command-card">
+          <div class="section-label">Typical Flow</div>
+          <div class="ipc-code">close(pipefd[0]);
+close(pipefd[1]);</div>
+          <p>Processes close the ends they do not need so the kernel can detect EOF and broken-pipe conditions correctly.</p>
+        </div>
+      </div>
+      <div class="ipc-demo-shell">
+        <div class="section-label" style="margin-bottom:.75rem">Interactive Demo</div>
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:1.5rem">
+          <div class="ipc-surface">
+            <div class="section-label" style="margin-bottom:1rem">Anonymous Pipe (Kernel Buffer)</div>
+            <div class="pipe-tube" style="margin-bottom:.5rem">
+              <div class="pipe-fill" id="pipeFill" style="width:0%"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--text-muted);font-family:var(--font-mono);margin-bottom:1.5rem">
+              <span>Read End</span>
+              <span id="pipeCount">0/8</span>
+              <span>Write End</span>
+            </div>
+            <div style="display:flex;gap:1rem" id="pipeBuf"></div>
+          </div>
+          <div class="ipc-surface">
+            <div class="section-label">Log & Controls</div>
+            <div style="display:flex;gap:.5rem;margin-bottom:1rem;flex-wrap:wrap">
+              <button class="btn btn-primary btn-sm" id="pipeWrite">write()</button>
+              <button class="btn btn-secondary btn-sm" id="pipeRead">read()</button>
+              <button class="btn btn-ghost btn-sm" id="pipeReset">Reset</button>
+            </div>
+            <div id="pipeLog" class="log" style="height:200px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ipc-tab-content" id="ipc-mq" style="display:none">
+    <div class="card ipc-detail-card">
+      <div class="ipc-detail-head">
+        <h2 class="ipc-detail-title">Message Queues</h2>
+        <span class="badge badge-purple">Priority IPC</span>
+      </div>
+      <div class="ipc-code ipc-syntax">mqd_t mq_open(const char *name, int flags);</div>
+      <p class="ipc-detail-copy">Message queues send complete messages instead of raw bytes. Each message can carry a priority, so the kernel can deliver urgent work before lower-priority items.</p>
+      <div class="ipc-param-block">
+        <div class="section-label">Parameters</div>
+        <div class="ipc-param-list">
+          <div class="ipc-param-item"><span class="mono">name</span> pathname-like identifier for the queue, such as <span class="mono">"/jobs"</span>, so processes can open the same queue.</div>
+          <div class="ipc-param-item"><span class="mono">flags</span> open behavior such as create, read-only, write-only, or non-blocking mode.</div>
+          <div class="ipc-param-item"><span class="mono">msg</span> pointer to the message bytes being sent.</div>
+          <div class="ipc-param-item"><span class="mono">len</span> size of the message buffer in bytes.</div>
+          <div class="ipc-param-item"><span class="mono">prio</span> message priority used by the kernel to decide delivery order.</div>
+          <div class="ipc-param-item"><span class="mono">mqdes</span> descriptor returned by <span class="mono">mq_open()</span> that identifies the queue for later send and receive operations.</div>
+        </div>
+      </div>
+      <div class="ipc-overview-grid">
+        <div class="ipc-command-card">
+          <div class="section-label">Core Calls</div>
+          <div class="ipc-code">int mq_send(mqd_t mqdes, const char *msg, size_t len, unsigned prio);
+ssize_t mq_receive(mqd_t mqdes, char *buf, size_t len, unsigned *prio);</div>
+          <p><span class="mono">mq_send()</span> posts a full message with a priority, and <span class="mono">mq_receive()</span> dequeues the next available message from the kernel-managed queue.</p>
+        </div>
+        <div class="ipc-command-card">
+          <div class="section-label">Cleanup</div>
+          <div class="ipc-code">mq_close(mqdes);
+mq_unlink("/queue-name");</div>
+          <p><span class="mono">mq_close()</span> releases this process descriptor. <span class="mono">mq_unlink()</span> removes the named queue once it is no longer needed.</p>
+        </div>
+      </div>
+      <div class="ipc-demo-shell">
+        <div class="section-label" style="margin-bottom:.75rem">Interactive Demo</div>
+        <div style="display:grid;grid-template-columns:300px 1fr;gap:1.5rem">
+          <div class="ipc-surface">
+            <div class="section-label" style="margin-bottom:1rem">Send Message</div>
+            <div class="form-group" style="margin-bottom:.5rem">
+              <label class="form-label">Message</label>
+              <input id="mqMsg" class="form-input" value="Hello Process B">
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label">Priority (Higher=First)</label>
+              <input id="mqPri" type="number" class="form-input form-mono" value="1" min="1" max="10">
+            </div>
+            <div style="display:flex;gap:.5rem">
+              <button class="btn btn-primary" id="mqEnq" style="flex:1">send()</button>
+              <button class="btn btn-secondary" id="mqDeq" style="flex:1">recv()</button>
+            </div>
+          </div>
+          <div class="ipc-surface">
+            <div class="section-label" style="margin-bottom:1rem">Message Queue (Priority Ordered)</div>
+            <div id="mqViz" style="background:var(--bg-sunken);border:1px solid var(--border-subtle);border-radius:var(--r-md);min-height:220px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ipc-tab-content" id="ipc-shm" style="display:none">
+    <div class="card ipc-detail-card">
+      <div class="ipc-detail-head">
+        <h2 class="ipc-detail-title">Shared Memory</h2>
+        <span class="badge badge-green">Fastest IPC</span>
+      </div>
+      <div class="ipc-code ipc-syntax">int fd = shm_open("/region", O_CREAT | O_RDWR, 0666);</div>
+      <p class="ipc-detail-copy">Shared memory maps the same physical pages into multiple processes, so communication happens through ordinary loads and stores rather than copying data through the kernel on every operation.</p>
+      <div class="ipc-param-block">
+        <div class="section-label">Parameters</div>
+        <div class="ipc-param-list">
+          <div class="ipc-param-item"><span class="mono">"/region"</span> shared-memory object name used by multiple processes to refer to the same region.</div>
+          <div class="ipc-param-item"><span class="mono">O_CREAT | O_RDWR</span> flags that create the region if needed and open it for reading and writing.</div>
+          <div class="ipc-param-item"><span class="mono">0666</span> permission bits controlling which users can access the shared object.</div>
+          <div class="ipc-param-item"><span class="mono">size</span> total bytes reserved for the region before mapping.</div>
+          <div class="ipc-param-item"><span class="mono">PROT_READ | PROT_WRITE</span> protection flags describing how the mapped memory may be accessed.</div>
+          <div class="ipc-param-item"><span class="mono">MAP_SHARED</span> tells the kernel that updates should be visible to every process mapping the same region.</div>
+        </div>
+      </div>
+      <div class="ipc-overview-grid">
+        <div class="ipc-command-card">
+          <div class="section-label">Setup</div>
+          <div class="ipc-code">ftruncate(fd, size);
+void *addr = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);</div>
+          <p>After <span class="mono">mmap()</span>, every process sees the same memory region. Reads and writes happen directly against the shared pages.</p>
+        </div>
+        <div class="ipc-command-card">
+          <div class="section-label">Why Synchronization Matters</div>
+          <div class="ipc-code">sem_wait(&lock);
+access shared data
+sem_post(&lock);</div>
+          <p>The kernel does not automatically serialize access. Semaphores or mutexes are usually paired with shared memory to avoid races.</p>
+        </div>
+      </div>
+      <div class="ipc-demo-shell">
+        <div class="section-label" style="margin-bottom:.75rem">Interactive Demo</div>
+        <div class="ipc-surface">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+            <div class="section-label" style="margin-bottom:0">Shared Memory Segment</div>
+            <button class="btn btn-ghost btn-sm" id="shmReset">Reset Region</button>
+          </div>
+          <div class="shm-toolbar">
+            <div>
+              <div class="section-label" style="margin-bottom:.45rem">Active Process</div>
+              <div class="shm-processes" id="shmProcessPicker"></div>
+            </div>
+            <div>
+              <div class="section-label" style="margin-bottom:.45rem">Operation</div>
+              <div class="shm-actions">
+                <button class="btn btn-secondary btn-sm shm-action-btn active" id="shmReadMode" type="button">Read</button>
+                <button class="btn btn-ghost btn-sm shm-action-btn" id="shmWriteMode" type="button">Write</button>
+              </div>
+            </div>
+          </div>
+          <div id="shmHint" class="shm-hint"></div>
+          <div id="shmGrid" style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.5rem"></div>
+          <div class="section-label">Access Log</div>
+          <div id="shmLog" class="log" style="height:150px"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ipc-tab-content" id="ipc-signals" style="display:none">
+    <div class="card ipc-detail-card">
+      <div class="ipc-detail-head">
+        <h2 class="ipc-detail-title">Signals</h2>
+        <span class="badge badge-orange">Asynchronous</span>
+      </div>
+      <div class="ipc-code ipc-syntax">int kill(pid_t pid, int sig);</div>
+      <p class="ipc-detail-copy">Signals are lightweight asynchronous notifications. They are mainly used for control, interruption, and lifecycle events rather than transferring large amounts of data.</p>
+      <div class="ipc-param-block">
+        <div class="section-label">Parameters</div>
+        <div class="ipc-param-list">
+          <div class="ipc-param-item"><span class="mono">pid</span> target process ID, or a special value that can address process groups depending on the call.</div>
+          <div class="ipc-param-item"><span class="mono">sig</span> signal number to deliver, such as <span class="mono">SIGTERM</span>, <span class="mono">SIGSTOP</span>, or <span class="mono">SIGKILL</span>.</div>
+          <div class="ipc-param-item"><span class="mono">act</span> structure passed to <span class="mono">sigaction()</span> that defines the handler and signal behavior.</div>
+          <div class="ipc-param-item"><span class="mono">oldact</span> optional structure where the previous handler configuration can be returned.</div>
+        </div>
+      </div>
+      <div class="ipc-overview-grid">
+        <div class="ipc-command-card">
+          <div class="section-label">Core Calls</div>
+          <div class="ipc-code">int sigaction(int sig, const struct sigaction *act, struct sigaction *oldact);</div>
+          <p><span class="mono">kill()</span> sends the signal, and <span class="mono">sigaction()</span> lets a process install a handler for catchable signals.</p>
+        </div>
+        <div class="ipc-command-card">
+          <div class="section-label">Common Behavior</div>
+          <div class="ipc-code">SIGTERM
+SIGKILL
+SIGSTOP
+SIGCONT</div>
+          <p>Signals are great for process control, but they carry very little payload compared with queues, pipes, or shared memory.</p>
+        </div>
+      </div>
+      <div class="ipc-demo-shell">
+        <div class="section-label" style="margin-bottom:.75rem">Interactive Demo</div>
+        <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem">
+          <div class="ipc-surface">
+            <div class="section-label">POSIX Signals</div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Signal</th><th>#</th><th>Description</th></tr></thead>
+                <tbody id="sigTable"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="ipc-surface">
+            <div class="section-label" style="margin-bottom:1rem">Send Signal</div>
+            <div class="form-group" style="margin-bottom:.5rem">
+              <label class="form-label">Target PID</label>
+              <input id="sigTarget" class="form-input form-mono" value="1234">
+            </div>
+            <div class="form-group" style="margin-bottom:1rem">
+              <label class="form-label">Signal</label>
+              <select id="sigSel" class="form-select" style="font-family:var(--font-mono)">
+                <option>SIGKILL</option><option>SIGTERM</option><option>SIGINT</option>
+                <option>SIGSTOP</option><option>SIGCONT</option><option>SIGUSR1</option>
+                <option>SIGUSR2</option><option>SIGCHLD</option><option>SIGPIPE</option><option>SIGALRM</option>
+              </select>
+            </div>
+            <button class="btn btn-primary" id="sigSend" style="width:100%;margin-bottom:1rem">kill(pid, signal)</button>
+            <div id="sigBadge" style="margin-bottom:1rem"></div>
+            <div class="section-label">Signal History</div>
+            <div id="sigLog" class="log" style="height:200px"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Inter-Process Communication</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+<div id="toast-container"></div><script src="../shared.js"></script><script src="./ipc.js"></script></body></html>
