@@ -1,0 +1,32 @@
+@import url('../shared.css');
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
+.pane{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:var(--sp-5)}
+.mono{font-family:var(--font-mono)}
+.viz{min-height:240px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:var(--sp-4)}
+.log{min-height:120px;max-height:220px;overflow:auto;background:var(--bg-sunken);border-radius:var(--r-sm);padding:var(--sp-3);font-family:var(--font-mono);font-size:.8rem;white-space:pre-wrap}
+.chip{display:inline-flex;min-height:44px;align-items:center;padding:.25rem .65rem;border:1px solid var(--border-default);border-radius:var(--r-full);font-size:.75rem;background:var(--bg-elevated)}
+.row{display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center;margin-bottom:var(--sp-3)}
+.grid{display:grid;gap:var(--sp-3)}
+canvas{width:100%;height:auto;border:1px solid var(--border-subtle);border-radius:var(--r-md);background:var(--bg-elevated)}
+@media (max-width:960px){.sim-grid{grid-template-columns:1fr}}
+
+/* Disk blocks (allocation visualization) */
+.disk-block {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-xs);
+  font-size: .7rem;
+  font-family: var(--font-mono);
+  transition: all var(--t-fast);
+  cursor: default;
+}
+.disk-block.free {
+  background: var(--bg-sunken);
+  border: 1px dashed var(--border-default);
+  color: var(--text-muted);
+}
+.disk-block.used { color: var(--text-primary); font-weight: 600; }
+.disk-block.index-block { font-weight: 800; }
+.disk-block:hover { transform: scale(1.08); z-index: 10; }
