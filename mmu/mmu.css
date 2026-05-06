@@ -1,0 +1,78 @@
+@import url('../shared.css');
+.sim-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-6)}
+.pane{background:var(--bg-card);border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:var(--sp-5)}
+.mono{font-family:var(--font-mono)}
+.viz{min-height:240px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:var(--sp-4)}
+.log{min-height:120px;max-height:220px;overflow:auto;background:var(--bg-sunken);border-radius:var(--r-sm);padding:var(--sp-3);font-family:var(--font-mono);font-size:.8rem;white-space:pre-wrap}
+.chip{display:inline-flex;min-height:44px;align-items:center;padding:.25rem .65rem;border:1px solid var(--border-default);border-radius:var(--r-full);font-size:.75rem;background:var(--bg-elevated)}
+.row{display:flex;flex-wrap:wrap;gap:var(--sp-3);align-items:center;margin-bottom:var(--sp-3)}
+.grid{display:grid;gap:var(--sp-3)}
+canvas{width:100%;height:auto;border:1px solid var(--border-subtle);border-radius:var(--r-md);background:var(--bg-elevated)}
+
+/* Page Table Walk Visualization */
+.page-walk-viz {
+  padding:12px;
+  background:var(--bg-sunken);
+  border-radius:var(--r-md);
+  border:1px solid var(--border-subtle)
+}
+
+.walk-steps {
+  display:flex;
+  flex-direction:column;
+  gap:10px
+}
+
+.walk-step {
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  padding:10px 12px;
+  background:var(--bg-card);
+  border-radius:var(--r-sm);
+  border-left:4px solid var(--border-default)
+}
+
+.step-num {
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-width:36px;
+  height:36px;
+  border-radius:var(--r-sm);
+  color:#fff;
+  font-weight:600;
+  font-size:.85rem;
+  flex-shrink:0
+}
+
+.step-content {
+  flex:1;
+  min-width:0
+}
+
+.step-title {
+  font-size:.85rem;
+  font-weight:500;
+  color:var(--text-default);
+  margin-bottom:4px
+}
+
+.step-detail {
+  font-size:.75rem;
+  color:var(--text-muted);
+  font-family:var(--font-mono)
+}
+
+@keyframes slideIn {
+  from {
+    opacity:0;
+    transform:translateX(-8px)
+  }
+  to {
+    opacity:1;
+    transform:translateX(0)
+  }
+}
+
+@media (max-width:960px){.sim-grid{grid-template-columns:1fr}}
