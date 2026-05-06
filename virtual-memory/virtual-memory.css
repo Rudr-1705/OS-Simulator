@@ -1,68 +1,295 @@
 @import url('../shared.css');
 
+
+/* =====================================
+   GENERAL VISUAL AREA
+===================================== */
+
 .viz {
+
   min-height: 220px;
+
   background: var(--bg-elevated);
+
   border: 1px solid var(--border-subtle);
+
   border-radius: var(--r-md);
-  padding: 12px;
+
+  padding: 1rem;
 }
+
+
+
+/* =====================================
+   PAGE BOXES
+===================================== */
 
 .page-box {
+
   display: inline-flex;
-  min-width: 42px;
-  min-height: 42px;
-  border: 1px solid var(--border-default);
-  border-radius: 6px;
+
   align-items: center;
+
   justify-content: center;
-  margin: 2px;
+
+  min-width: 48px;
+
+  min-height: 48px;
+
+  margin: 4px;
+
+  border-radius: 10px;
+
+  border: 1px solid var(--border-default);
+
+  background: var(--bg-sunken);
+
   font-family: var(--font-mono);
+
+  font-size: .9rem;
+
+  transition: all .2s ease;
 }
+
+
+
+/* =====================================
+   PAGE HIT
+===================================== */
 
 .hit {
-  background: rgba(16,185,129,.18);
+
+  background: rgba(16,185,129,.15);
+
   border-color: #10b981;
+
+  color: #10b981;
+
+  font-weight: 700;
 }
+
+
+
+/* =====================================
+   PAGE FAULT
+===================================== */
 
 .fault {
-  background: rgba(239,68,68,.18);
+
+  background: rgba(239,68,68,.15);
+
   border-color: #ef4444;
+
+  color: #ef4444;
+
+  font-weight: 700;
 }
+
+
+
+/* =====================================
+   FRAME BOX
+===================================== */
 
 .frame-box {
+
   display: flex;
+
   flex-direction: column;
+
   align-items: center;
+
   justify-content: center;
-  min-width: 60px;
-  min-height: 60px;
-  border-radius: 8px;
+
+  min-width: 72px;
+
+  min-height: 72px;
+
+  padding: .8rem;
+
+  border-radius: 12px;
+
+  font-family: var(--font-mono);
+
+  background: var(--bg-elevated);
+
   border: 1px solid var(--border-default);
-  background: var(--bg-elevated);
+
+  transition: all .15s ease;
 }
 
-.stats-row {
+
+
+.frame-box:hover {
+
+  transform: translateY(-2px);
+}
+
+
+
+/* =====================================
+   FRAME VALUE
+===================================== */
+
+.frame-val {
+
+  font-size: 1.1rem;
+
+  font-weight: 700;
+}
+
+
+
+/* =====================================
+   CONTROLS
+===================================== */
+
+.controls-row {
+
   display: flex;
-  gap: 1rem;
-  margin-bottom: 1rem;
+
+  gap: .75rem;
+
+  align-items: center;
+
+  flex-wrap: wrap;
 }
 
-.stat-card {
-  flex: 1;
-  padding: .9rem;
+
+
+/* =====================================
+   TABS
+===================================== */
+
+.tabs {
+
+  display: flex;
+
+  gap: .7rem;
+
+  margin-bottom: 1rem;
+
+  flex-wrap: wrap;
+}
+
+
+
+.tab-btn {
+
+  padding: .7rem 1rem;
+
   border-radius: 10px;
+
+  border: 1px solid var(--border-default);
+
   background: var(--bg-elevated);
+
+  color: var(--text-primary);
+
+  cursor: pointer;
+
+  transition: all .2s ease;
+
+  font-weight: 500;
+}
+
+
+
+.tab-btn:hover {
+
+  transform: translateY(-1px);
+}
+
+
+
+.tab-btn.active {
+
+  background: var(--accent-blue-dim);
+
+  border-color: var(--accent-blue);
+
+  color: var(--accent-blue);
+}
+
+
+
+/* =====================================
+   CHIP
+===================================== */
+
+.chip {
+
+  display: inline-flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: .35rem .7rem;
+
+  border-radius: 999px;
+
+  background: var(--bg-sunken);
+
+  border: 1px solid var(--border-subtle);
+
+  font-size: .78rem;
+
+  margin-right: .4rem;
+
+  margin-bottom: .4rem;
+}
+
+
+
+/* =====================================
+   CANVAS
+===================================== */
+
+canvas {
+
+  width: 100%;
+
+  max-width: 100%;
+
+  border-radius: 12px;
+
+  background: var(--bg-elevated);
+
   border: 1px solid var(--border-subtle);
 }
 
-.stat-label {
-  font-size: .75rem;
-  color: var(--text-muted);
-}
 
-.stat-value {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-top: .3rem;
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+
+@media (max-width:768px) {
+
+  .controls-row {
+
+    flex-direction: column;
+
+    align-items: stretch;
+  }
+
+  .tabs {
+
+    flex-direction: column;
+  }
+
+  .frame-box {
+
+    min-width: 60px;
+
+    min-height: 60px;
+  }
+
+  .page-box {
+
+    min-width: 42px;
+
+    min-height: 42px;
+  }
 }
