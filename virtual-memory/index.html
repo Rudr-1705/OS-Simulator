@@ -7,291 +7,254 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+    content="width=device-width, initial-scale=1.0" />
 
   <title>
     Virtual Memory — OS Simulator
   </title>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link
+    rel="preconnect"
+    href="https://fonts.googleapis.com" />
 
   <link
     rel="preconnect"
     href="https://fonts.gstatic.com"
-    crossorigin
-  />
+    crossorigin />
 
   <link
-    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+    rel="stylesheet" />
+
+  <link
     rel="stylesheet"
-  />
+    href="../shared.css" />
 
-  <link rel="stylesheet" href="../shared.css" />
-
-  <link rel="stylesheet" href="./virtual-memory.css" />
+  <link
+    rel="stylesheet"
+    href="./virtual-memory.css" />
 
 </head>
 
 <body>
 
-<nav class="topnav">
+  <nav class="topnav">
 
-  <a href="../index.html" class="nav-back">
+    <a
+      href="../index.html"
+      class="nav-back">
 
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-    >
-      <path d="M10 3L5 8l5 5"/>
-    </svg>
+      ← OS Simulator
 
-    OS Simulator
+    </a>
 
-  </a>
+    <div class="nav-center">
 
-  <div class="nav-center">
-
-    <svg
-      class="nav-module-icon"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      stroke-width="1.8"
-      stroke-linecap="round"
-      stroke-linejoin="round"
-    >
-
-      <rect x="2" y="4" width="20" height="16" rx="2"/>
-
-      <rect x="6" y="8" width="5" height="8"/>
-
-      <rect x="13" y="8" width="5" height="8"/>
-
-    </svg>
-
-    <span class="nav-module-name">
-      Virtual Memory
-    </span>
-
-  </div>
-
-</nav>
-
-
-
-<header class="module-header">
-
-  <div class="module-header-content">
-
-    <div class="module-header-meta">
-
-      <span class="badge badge-blue">
-        Memory
-      </span>
-
-      <span class="badge badge-gray">
-        Demand Paging
+      <span class="nav-module-name">
+        Virtual Memory
       </span>
 
     </div>
 
-    <h1 class="module-title">
-      Virtual Memory
-    </h1>
-
-  </div>
-
-</header>
+  </nav>
 
 
 
-<main class="simulator-main container">
+  <header class="module-header">
 
-  <!-- SHARED INPUTS -->
+    <div class="module-header-content">
 
-  <div class="controls-panel">
+      <div class="module-header-meta">
 
-    <div class="controls-row">
+        <span class="badge badge-blue">
+          Memory
+        </span>
 
-      <input
-        id="globalRefs"
-        class="form-input"
-        value="1 2 3 4 2 1 5 2 4 6 1"
-      />
+        <span class="badge badge-gray">
+          Demand Paging
+        </span>
 
-      <input
-        id="globalFrames"
-        class="form-input mono"
-        type="number"
-        value="4"
-        style="width:90px"
-      />
+      </div>
 
-      <input
-        id="globalWindow"
-        class="form-input mono"
-        type="number"
-        value="4"
-        style="width:90px"
-      />
+      <h1 class="module-title">
+        Virtual Memory
+      </h1>
+
+      <p class="module-desc">
+
+        Demand paging,
+        working set,
+        thrashing,
+        and swap-space simulation.
+
+      </p>
+
+    </div>
+
+  </header>
+
+
+
+  <main class="simulator-main container">
+
+
+    <!-- GLOBAL INPUTS -->
+
+    <div
+      class="controls-panel"
+      style="margin-bottom:1rem">
+
+      <div class="controls-row">
+
+        <input
+          id="globalRefs"
+          class="form-input"
+          value="1 2 3 4 2 1 5 2 4 6 1" />
+
+        <input
+          id="globalFrames"
+          class="form-input mono"
+          type="number"
+          value="4"
+          style="width:100px" />
+
+        <input
+          id="globalWindow"
+          class="form-input mono"
+          type="number"
+          value="4"
+          style="width:100px" />
+
+        <button
+          id="runAll"
+          class="btn btn-primary">
+
+          Run Simulation
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+
+    <!-- TABS -->
+
+    <div class="tabs">
 
       <button
-        id="runAll"
-        class="btn btn-primary"
-      >
-        Run
+        class="tab-btn active"
+        data-tab="demand">
+
+        Demand Paging
+
+      </button>
+
+      <button
+        class="tab-btn"
+        data-tab="working">
+
+        Working Set
+
+      </button>
+
+      <button
+        class="tab-btn"
+        data-tab="thrash">
+
+        Thrashing Curve
+
+      </button>
+
+      <button
+        class="tab-btn"
+        data-tab="swap">
+
+        Swap Space
+
       </button>
 
     </div>
 
-  </div>
 
 
-
-  <!-- TABS -->
-
-  <div class="tabs">
-
-    <button
-      class="tab-btn active"
-      data-tab="demand"
-    >
-      Demand Paging
-    </button>
-
-    <button
-      class="tab-btn"
-      data-tab="working"
-    >
-      Working Set
-    </button>
-
-    <button
-      class="tab-btn"
-      data-tab="thrash"
-    >
-      Thrashing Curve
-    </button>
-
-    <button
-      class="tab-btn"
-      data-tab="swap"
-    >
-      Swap Space
-    </button>
-
-  </div>
-
-
-
-  <!-- DEMAND PAGING -->
-
-  <div
-    class="controls-panel"
-    id="vm-demand"
-  >
+    <!-- DEMAND PAGING -->
 
     <div
-      id="vmDemandViz"
-      class="viz"
-    ></div>
+      class="controls-panel"
+      id="vm-demand">
 
-  </div>
+      <div
+        id="vmDemandViz"
+        class="viz">
 
-
-
-  <!-- WORKING SET -->
-
-  <div
-    class="controls-panel"
-    id="vm-working"
-    style="display:none"
-  >
-
-    <div
-      id="wsViz"
-      class="viz"
-    ></div>
-
-  </div>
-
-
-
-  <!-- THRASHING -->
-
-  <div
-    class="controls-panel"
-    id="vm-thrash"
-    style="display:none"
-  >
-
-    <canvas
-      id="thrashCv"
-      width="900"
-      height="320"
-    ></canvas>
-
-  </div>
-
-
-
-  <!-- SWAP -->
-
-  <div
-    class="controls-panel"
-    id="vm-swap"
-    style="display:none"
-  >
-
-    <div
-      id="swapViz"
-      class="viz"
-    ></div>
-
-  </div>
-
-</main>
-
-
-
-<footer class="module-footer">
-
-  <div class="container footer-inner">
-
-    <div class="footer-left">
-
-      <a
-        href="../index.html"
-        class="wordmark"
-        style="text-decoration:none"
-      >
-
-        <span class="wm-os">
-          OS
-        </span>
-
-        <span class="wm-sim">
-          Sim
-        </span>
-
-      </a>
+      </div>
 
     </div>
 
-  </div>
-
-</footer>
 
 
+    <!-- WORKING SET -->
 
-<div id="toast-container"></div>
+    <div
+      class="controls-panel"
+      id="vm-working"
+      style="display:none">
 
-<script src="../shared.js"></script>
+      <div
+        id="wsViz"
+        class="viz">
 
-<script src="./virtual-memory.js"></script>
+      </div>
+
+    </div>
+
+
+
+    <!-- THRASHING -->
+
+    <div
+      class="controls-panel"
+      id="vm-thrash"
+      style="display:none">
+
+      <canvas
+        id="thrashCv"
+        width="900"
+        height="320">
+
+      </canvas>
+
+    </div>
+
+
+
+    <!-- SWAP SPACE -->
+
+    <div
+      class="controls-panel"
+      id="vm-swap"
+      style="display:none">
+
+      <div
+        id="swapViz"
+        class="viz">
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+
+  <div id="toast-container"></div>
+
+  <script src="../shared.js"></script>
+
+  <script src="./virtual-memory.js"></script>
 
 </body>
+
 </html>
