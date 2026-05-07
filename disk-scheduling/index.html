@@ -11,22 +11,127 @@
   <nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg><span class="nav-module-name">Disk Scheduling</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
   <header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-green">Storage</span><span class="badge badge-gray">FCFS/SSTF/SCAN</span></div><h1 class="module-title">Disk Scheduling</h1><p class="module-desc">Animate head movement for common disk scheduling algorithms and compare seek behavior.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></div></header>
   
-  <section class="theory-section" id="theoryContent" style="display:none">
-  <div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
-  <div class="concepts-grid">
-    <div class="concept-card"><div class="concept-term">Seek Time</div><div class="concept-def">Time taken to move the disk head to the target cylinder.</div></div>
-    <div class="concept-card"><div class="concept-term">FCFS</div><div class="concept-def">First-Come, First-Served. Simplest, but typically yields high seek times.</div></div>
-    <div class="concept-card"><div class="concept-term">SSTF</div><div class="concept-def">Shortest Seek Time First. Closer requests served first. May cause starvation.</div></div>
-    <div class="concept-card"><div class="concept-term">SCAN</div><div class="concept-def">Elevator algorithm. Sweeps end-to-end.</div></div>
-    <div class="concept-card"><div class="concept-term">C-SCAN</div><div class="concept-def">Circular SCAN. Only services requests while moving in one direction.</div></div>
-    <div class="concept-card"><div class="concept-term">LOOK / C-LOOK</div><div class="concept-def">Variants of SCAN/C-SCAN that reverse immediately after the last request instead of hitting the disk bounds.</div></div>
-  </div></div><div><h3 class="section-label">Performance Comparison</h3><div class="table-wrap">
-  <table><thead><tr><th>Algorithm</th><th>Average Seek Time</th><th>Fairness</th></tr></thead><tbody>
-    <tr><td>FCFS</td><td>High</td><td>Fair (no starvation)</td></tr>
-    <tr><td>SSTF</td><td>Low</td><td>Poor (starvation possible)</td></tr>
-    <tr><td>SCAN</td><td>Medium</td><td>Better than SSTF</td></tr>
-    <tr><td>C-SCAN / C-LOOK</td><td>Medium</td><td>Best (uniform wait times)</td></tr>
-  </tbody></table></div></div></div></div></section>
+<section class="theory-section" id="theoryContent" style="display:none">
+<div class="container">
+
+<div class="theory-grid">
+
+<div>
+<h3 class="section-label">Disk Scheduling Overview</h3>
+
+<p style="color:var(--text-secondary);line-height:1.75;margin-bottom:18px">
+Disk scheduling algorithms determine the order in which pending disk I/O requests are serviced. Since seek time is the largest component of disk access time, the main objective of disk scheduling is to reduce total head movement and improve overall disk throughput.
+</p>
+
+<p style="color:var(--text-secondary);line-height:1.75;margin-bottom:18px">
+Disk access time mainly consists of seek time, rotational latency and transfer time. Seek time is the time required to move the disk arm to the desired cylinder, while rotational latency is the waiting time for the required sector to rotate beneath the read/write head.
+</p>
+
+<div class="concepts-grid">
+
+<div class="concept-card">
+<div class="concept-term">FCFS</div>
+<div class="concept-def">
+Services requests in arrival order. Fair and simple, but may result in large seek movements.
+</div>
+</div>
+
+<div class="concept-card">
+<div class="concept-term">SSTF</div>
+<div class="concept-def">
+Selects the request nearest to the current head position. Reduces seek time but may cause starvation.
+</div>
+</div>
+
+<div class="concept-card">
+<div class="concept-term">SCAN / LOOK</div>
+<div class="concept-def">
+Head moves in one direction servicing requests before reversing. LOOK stops at the last request instead of the disk boundary.
+</div>
+</div>
+
+<div class="concept-card">
+<div class="concept-term">C-SCAN / C-LOOK</div>
+<div class="concept-def">
+Services requests only in one direction, giving more uniform waiting time across requests.
+</div>
+</div>
+
+</div>
+</div>
+
+<div>
+<h3 class="section-label">Performance Notes</h3>
+
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Algorithm</th>
+<th>Seek Time</th>
+<th>Starvation</th>
+<th>Fairness</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>FCFS</td>
+<td>High</td>
+<td>No</td>
+<td>High</td>
+</tr>
+
+<tr>
+<td>SSTF</td>
+<td>Low</td>
+<td>Possible</td>
+<td>Medium</td>
+</tr>
+
+<tr>
+<td>SCAN</td>
+<td>Medium</td>
+<td>Low</td>
+<td>Better than SSTF</td>
+</tr>
+
+<tr>
+<td>C-SCAN</td>
+<td>Medium</td>
+<td>Low</td>
+<td>Uniform wait time</td>
+</tr>
+
+<tr>
+<td>LOOK</td>
+<td>Lower than SCAN</td>
+<td>Low</td>
+<td>Good</td>
+</tr>
+
+<tr>
+<td>C-LOOK</td>
+<td>Lower than C-SCAN</td>
+<td>Low</td>
+<td>Uniform wait time</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+<p style="color:var(--text-secondary);line-height:1.75;margin-top:18px">
+SCAN-based algorithms are commonly preferred in operating systems because they provide a balance between low seek time and fairness. Circular variants further improve fairness by providing nearly uniform waiting time to all requests.
+</p>
+
+</div>
+
+</div>
+
+</div>
+</section>
+</tbody></table></div></div></div></div></section>
 
   <main class="simulator-main container">
     <section class="controls-panel">
@@ -60,6 +165,51 @@
         <div class="stat-card"><div class="stat-value" id="maxJump">0</div><div class="stat-label">Max Jump</div></div>
         <div class="stat-card"><div class="stat-value" id="minJump">0</div><div class="stat-label">Min Jump</div></div>
       </div>
+      
+  <section class="disk-metrics-panel">
+    <h3 class="section-label">Disk Timing</h3>
+
+    <div class="controls-row">
+
+      <div>
+        <label class="form-label">Disk RPM</label>
+        <input
+          class="form-input form-mono"
+          id="rpmInput"
+          type="number"
+          value="7200"
+          style="width:120px"
+        />
+      </div>
+
+      <div>
+        <label class="form-label">Seek / Cylinder (ms)</label>
+        <input
+          class="form-input form-mono"
+          id="seekPerTrackInput"
+          type="number"
+          value="0.1"
+          step="0.01"
+          style="width:120px"
+        />
+      </div>
+
+    </div>
+
+    <div class="stats-grid" style="margin-top:16px">
+
+      <div class="stat-card">
+        <div class="stat-value" id="rotLatency">0</div>
+        <div class="stat-label">Avg Rotational Latency (ms)</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-value" id="accessTime">0</div>
+        <div class="stat-label">Estimated Access Time (ms)</div>
+      </div>
+
+    </div>
+  </section>
     </section>
   </main>
   <footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Disk Scheduling</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
