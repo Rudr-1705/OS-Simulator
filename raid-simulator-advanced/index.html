@@ -1,347 +1,1057 @@
 <!doctype html>
 <html lang="en" data-theme="light">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RAID Simulator II — OS Simulator</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../shared.css" />
-    <link rel="stylesheet" href="../raid-simulator/raid-simulator.css" />
-  </head>
-  <body>
-    <nav class="topnav">
-      <a href="../index.html" class="nav-back">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M10 3L5 8l5 5" /></svg
-        >OS Simulator
-      </a>
-      <div class="nav-center">
-        <svg
-          class="nav-module-icon"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.8"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-          <line x1="6" y1="6" x2="6.01" y2="6" />
-          <line x1="6" y1="18" x2="6.01" y2="18" />
-        </svg>
-        <span class="nav-module-name">RAID Simulator II</span>
-      </div>
-      <div class="nav-actions">
-        <button
-          class="theory-toggle-btn"
-          onclick="toggleTheory()"
-          id="theoryToggleBtn"
-        >
-          <svg
-            width="11"
-            height="11"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" /></svg
-          ><span class="theory-toggle-label">Theory</span>
-        </button>
-        <button
-          class="theme-btn"
-          id="themeToggle"
-          onclick="ThemeManager.toggle()"
-          aria-label="Toggle theme"
-        >
-          <svg
-            id="themeIcon"
-            width="13"
-            height="13"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2.2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-          >
-            <circle cx="12" cy="12" r="5" />
-            <line x1="12" y1="1" x2="12" y2="3" />
-            <line x1="12" y1="21" x2="12" y2="23" />
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
-            <line x1="1" y1="12" x2="3" y2="12" />
-            <line x1="21" y1="12" x2="23" y2="12" />
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
-          </svg>
-        </button>
-      </div>
-    </nav>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RAID Simulator II — OS Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet" />
+  <style>
 
-    <header class="module-header">
-      <div class="module-header-content">
-        <div class="module-header-meta">
-          <span class="badge badge-green">Storage</span
-          ><span class="badge badge-gray">RAID 4/5/6/10</span>
-        </div>
-        <h1 class="module-title">RAID Simulator II</h1>
-        <p class="module-desc">
-          Explore advanced RAID levels: 4, 5, 6, and 10 with dedicated/rotating
-          parity, double parity, and mirrored striping.
-        </p>
-      </div>
-      <div class="module-header-icon">
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
-          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
-          <line x1="6" y1="6" x2="6.01" y2="6" />
-          <line x1="6" y1="18" x2="6.01" y2="18" />
-        </svg>
-      </div>
-    </header>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
+:root{--bg-base:#fafaf7;--bg-surface:#ffffff;--bg-card:#ffffff;--bg-elevated:#f5f4ef;--bg-sunken:#eeeee8;--bg-overlay:rgba(250,250,247,0.88);--border-subtle:#e8e8e0;--border-default:#d4d4c8;--border-strong:#b4b4a4;--border-focus:#c9920a;--accent-primary:#c9920a;--accent-primary-dim:rgba(201,146,10,0.12);--accent-blue:#c9920a;--accent-blue-dim:rgba(201,146,10,0.12);--accent-purple:#7c3aed;--accent-purple-dim:rgba(124,58,237,0.12);--accent-cyan:#0891b2;--accent-cyan-dim:rgba(8,145,178,0.12);--accent-green:#15803d;--accent-green-dim:rgba(21,128,61,0.12);--accent-orange:#c2410c;--accent-orange-dim:rgba(194,65,12,0.12);--accent-red:#dc2626;--accent-red-dim:rgba(220,38,38,0.12);--accent-pink:#be185d;--accent-pink-dim:rgba(190,24,93,0.12);--text-primary:#1c1a14;--text-secondary:#4a4840;--text-muted:#8a8878;--text-disabled:#c4c4b4;--text-inverse:#fafaf7;--grad-main:linear-gradient(135deg,#c9920a 0%,#c2410c 100%);--grad-surface:linear-gradient(160deg,#fafaf7 0%,#f0f0e8 100%);--shadow-xs:0 1px 3px rgba(28,26,20,0.06);--shadow-sm:0 2px 8px rgba(28,26,20,0.08);--shadow-md:0 4px 16px rgba(28,26,20,0.10);--shadow-lg:0 8px 32px rgba(28,26,20,0.12);--r-xs:4px;--r-sm:8px;--r-md:12px;--r-lg:16px;--r-xl:24px;--r-full:9999px;--font-ui:'Space Grotesk','Segoe UI',sans-serif;--font-mono:'JetBrains Mono','Fira Code',monospace;--font-display:'DM Serif Display',Georgia,serif;--t-fast:0.15s cubic-bezier(0.4,0,0.2,1);--t-normal:0.25s cubic-bezier(0.4,0,0.2,1);--t-slow:0.4s cubic-bezier(0.4,0,0.2,1);--t-spring:0.5s cubic-bezier(0.34,1.56,0.64,1)}
+[data-theme='dark']{--bg-base:#111108;--bg-surface:#18180e;--bg-card:#1e1e13;--bg-elevated:#272718;--bg-sunken:#0d0d06;--bg-overlay:rgba(17,17,8,0.92);--border-subtle:#2a2a1a;--border-default:#363622;--border-strong:#4a4a2e;--border-focus:#c9920a;--text-primary:#f0f0e2;--text-secondary:#9a9a80;--text-muted:#5a5a3e;--text-disabled:#2e2e1c;--grad-surface:linear-gradient(160deg,#1e1e13 0%,#272718 100%)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-ui);background:var(--bg-base);color:var(--text-primary);line-height:1.6;font-size:15px;min-height:100vh;transition:background-color var(--t-slow),color var(--t-slow)}
+.container{width:92%;max-width:1280px;margin:0 auto}
+a{text-decoration:none;color:var(--accent-blue)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:.55rem 1.25rem;border-radius:var(--r-full);font-size:.85rem;font-weight:600;cursor:pointer;border:none;font-family:var(--font-ui);letter-spacing:-0.01em;will-change:transform;position:relative;overflow:hidden;transition:all var(--t-fast)}
+.btn-primary{background:var(--grad-main);color:#fff;box-shadow:0 2px 0 rgba(255,255,255,0.15) inset,4px 4px 12px rgba(201,146,10,0.25),-2px -2px 8px rgba(255,255,255,0.1),0 1px 4px rgba(0,0,0,0.15)}
+.btn-primary:hover{transform:translateY(-2px);filter:brightness(1.08);box-shadow:0 2px 0 rgba(255,255,255,0.15) inset,6px 6px 20px rgba(201,146,10,0.35),-2px -2px 10px rgba(255,255,255,0.12),0 4px 16px rgba(0,0,0,0.2)}
+.btn-primary:active{transform:translateY(0) scale(0.99);filter:brightness(0.97)}
+.btn-secondary{background:var(--bg-elevated);color:var(--text-primary);border:1px solid var(--border-default);box-shadow:3px 3px 8px rgba(0,0,0,0.06),-2px -2px 6px rgba(255,255,255,0.65),inset 0 1px 0 rgba(255,255,255,0.5)}
+.btn-secondary:hover{border-color:var(--accent-primary);color:var(--accent-primary);background:var(--accent-primary-dim);transform:translateY(-1px)}
+.btn-secondary:active{transform:translateY(0)}
+[data-theme='dark'] .btn-secondary{box-shadow:3px 3px 10px rgba(0,0,0,0.4),-1px -1px 4px rgba(255,255,255,0.02),inset 0 1px 0 rgba(255,255,255,0.03)}
+.btn-ghost{background:transparent;color:var(--text-secondary);border:1px solid var(--border-subtle)}
+.btn-ghost:hover{background:var(--bg-elevated);color:var(--text-primary);transform:translateY(-1px)}
+.btn:disabled{opacity:0.38;cursor:not-allowed;transform:none!important;filter:none!important}
+.badge{display:inline-flex;align-items:center;gap:4px;padding:.2rem .65rem;border-radius:var(--r-full);font-size:.7rem;font-weight:700;text-transform:uppercase}
+.badge-green{background:var(--accent-green-dim);color:var(--accent-green);border:1px solid currentColor}
+.badge-gray{background:var(--bg-sunken);color:var(--text-muted);border:1px solid var(--border-default)}
+.form-input{background:var(--bg-elevated);border:1px solid var(--border-default);border-radius:var(--r-sm);color:var(--text-primary);padding:.6rem .9rem;box-shadow:inset 2px 2px 6px rgba(0,0,0,0.07),inset -1px -1px 4px rgba(255,255,255,0.6),0 1px 0 rgba(255,255,255,0.5);transition:border-color var(--t-fast),box-shadow var(--t-fast);outline:none}
+.form-input:focus{border-color:var(--accent-primary);box-shadow:inset 2px 2px 6px rgba(0,0,0,0.06),0 0 0 3px var(--accent-primary-dim)}
+.form-mono{font-family:var(--font-mono)}
+.tabs{display:flex;gap:2px;background:var(--bg-sunken);border-radius:var(--r-md);padding:3px;box-shadow:inset 2px 2px 6px rgba(0,0,0,0.08),inset -1px -1px 4px rgba(255,255,255,0.55)}
+.tab-btn{flex:1;padding:.5rem 1rem;border:none;border-radius:calc(var(--r-md) - 3px);background:transparent;color:var(--text-secondary);font-size:.83rem;font-weight:600;cursor:pointer;transition:all var(--t-fast)}
+.tab-btn.active{background:var(--bg-card);color:var(--accent-primary);box-shadow:3px 3px 8px rgba(0,0,0,0.08),-2px -2px 6px rgba(255,255,255,0.65),inset 0 1px 0 rgba(255,255,255,0.5)}
+.tab-btn:not(.active):hover{background:var(--bg-elevated);color:var(--text-primary)}
+[data-theme='dark'] .tab-btn.active{box-shadow:3px 3px 10px rgba(0,0,0,0.4),-1px -1px 4px rgba(255,255,255,0.02)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px}
+.stat-card{background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--r-md);padding:16px;text-align:center;box-shadow:4px 4px 10px rgba(0,0,0,0.06),-3px -3px 8px rgba(255,255,255,0.7),inset 0 1px 0 rgba(255,255,255,0.4);transition:box-shadow var(--t-normal),transform var(--t-normal)}
+.stat-card:hover{transform:translateY(-2px)}
+[data-theme='dark'] .stat-card{box-shadow:4px 4px 12px rgba(0,0,0,0.4),-2px -2px 6px rgba(255,255,255,0.02)}
+.stat-value{font-family:var(--font-mono);font-size:1.4rem;font-weight:700;background:var(--grad-main);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-label{font-size:.8rem;color:var(--text-muted);margin-top:4px}
+.table-wrap{overflow-x:auto;border-radius:var(--r-md);border:1px solid var(--border-subtle)}
+table{width:100%;border-collapse:collapse}
+thead{background:var(--bg-elevated)}
+th,td{padding:.7rem 1rem;text-align:left;border-bottom:1px solid var(--border-subtle)}
+tbody tr{transition:background var(--t-fast)}
+tbody tr:hover{background:var(--bg-elevated)}
+#toast-container{position:fixed;bottom:1.5rem;right:1.5rem;display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}
+.toast{background:color-mix(in srgb,var(--bg-elevated) 85%,transparent);backdrop-filter:blur(20px) saturate(160%);border:1px solid color-mix(in srgb,var(--border-default) 70%,transparent);border-radius:var(--r-md);padding:.75rem 1.1rem;font-size:.85rem;color:var(--text-primary);display:flex;gap:8px;align-items:center;box-shadow:0 8px 32px rgba(0,0,0,0.12),inset 0 1px 0 rgba(255,255,255,0.5);transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1),opacity 0.3s ease;transform:translateX(120%);opacity:0}
+.toast.show{transform:translateX(0);opacity:1}
+.toast-success{border-left:3px solid var(--accent-green)}
+.toast-error{border-left:3px solid var(--accent-red)}
+.topnav{position:sticky;top:0;z-index:200;background:color-mix(in srgb,var(--bg-base) 55%,transparent);backdrop-filter:blur(32px) saturate(200%) brightness(1.05);-webkit-backdrop-filter:blur(32px) saturate(200%) brightness(1.05);border-bottom:1px solid color-mix(in srgb,var(--border-subtle) 50%,transparent);box-shadow:0 1px 0 color-mix(in srgb,var(--accent-primary) 8%,transparent),0 4px 24px rgba(0,0,0,0.06);display:flex;align-items:center;justify-content:space-between;padding:0 2rem;height:52px;gap:1rem;transition:background var(--t-slow),border-color var(--t-slow)}
+[data-theme='dark'] .topnav{background:color-mix(in srgb,var(--bg-base) 60%,transparent)}
+.nav-back{display:flex;align-items:center;gap:6px;font-family:var(--font-mono);font-size:.72rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;transition:color var(--t-fast)}
+.nav-back svg{fill:currentColor;stroke:none;transition:transform var(--t-fast)}
+.nav-back:hover{color:var(--accent-primary)}
+.nav-back:hover svg{transform:translateX(-2px)}
+.nav-center{display:flex;align-items:center;gap:.55rem;font-size:.82rem;font-weight:600;color:var(--text-secondary)}
+.nav-module-icon{width:16px;height:16px;flex-shrink:0;color:var(--accent-primary)}
+.nav-actions{display:flex;align-items:center;gap:.5rem}
+.theme-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border-default);border-radius:var(--r-sm);background:var(--bg-elevated);color:var(--text-muted);cursor:pointer;transition:all var(--t-fast)}
+.theme-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary)}
+.theory-toggle-btn{display:inline-flex;align-items:center;gap:5px;padding:.28rem .75rem;border:1px solid var(--border-default);border-radius:var(--r-sm);background:transparent;color:var(--text-muted);font-family:var(--font-ui);font-size:.72rem;font-weight:700;cursor:pointer;text-transform:uppercase;letter-spacing:.06em;transition:all var(--t-fast)}
+.theory-toggle-btn:hover{border-color:var(--accent-primary);color:var(--accent-primary);background:var(--accent-primary-dim)}
+.module-header{border-bottom:1px solid color-mix(in srgb,var(--border-subtle) 60%,transparent);padding:3rem 0 2.5rem;background:color-mix(in srgb,var(--bg-surface) 75%,transparent);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);display:flex;align-items:flex-end;justify-content:space-between;gap:2rem;position:relative;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.04),inset 0 -1px 0 rgba(255,255,255,0.3)}
+.module-header::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent-primary);box-shadow:0 0 12px rgba(201,146,10,0.5)}
+[data-theme='dark'] .module-header{background:color-mix(in srgb,var(--bg-surface) 65%,transparent)}
+.module-header-content{padding:0 2rem 0 3rem;max-width:640px;position:relative;z-index:1}
+.module-header-meta{display:flex;align-items:center;gap:.5rem;margin-bottom:.75rem}
+.module-title{font-family:var(--font-display);font-size:clamp(1.8rem,4vw,3rem);font-weight:400;line-height:1.05;letter-spacing:-.02em;color:var(--text-primary);margin-bottom:.6rem}
+.module-desc{font-size:.9rem;color:var(--text-secondary);line-height:1.65;max-width:480px}
+.module-header-icon{padding:0 3rem 0 1rem;opacity:0.07;user-select:none;pointer-events:none;display:flex;align-items:center;flex-shrink:0}
+.module-header-icon svg{width:96px;height:96px;stroke:var(--text-primary);stroke-width:1;fill:none;stroke-linecap:round;stroke-linejoin:round}
+.theory-section{background:color-mix(in srgb,var(--bg-surface) 80%,transparent);backdrop-filter:blur(20px) saturate(150%);border-bottom:1px solid color-mix(in srgb,var(--border-subtle) 60%,transparent);padding:32px 0}
+.theory-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px}
+.section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-muted);margin-bottom:16px}
+.concepts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+.concept-card{background:color-mix(in srgb,var(--bg-elevated) 80%,transparent);border:1px solid color-mix(in srgb,var(--border-subtle) 65%,transparent);border-radius:var(--r-md);padding:16px;box-shadow:3px 3px 8px rgba(0,0,0,0.05),-2px -2px 6px rgba(255,255,255,0.55),inset 0 1px 0 rgba(255,255,255,0.4);transition:transform var(--t-normal)}
+.concept-card:hover{transform:translateY(-2px)}
+.concept-term{font-weight:700;font-size:.85rem;color:var(--text-primary);margin-bottom:6px}
+.concept-def{font-size:.82rem;color:var(--text-secondary);line-height:1.5}
+.simulator-main{padding:32px 0 64px}
+.controls-panel{background:var(--bg-card);border:1px solid color-mix(in srgb,var(--border-subtle) 60%,transparent);border-radius:var(--r-lg);padding:24px;margin-bottom:24px;box-shadow:6px 6px 16px rgba(0,0,0,0.07),-4px -4px 12px rgba(255,255,255,0.65),inset 0 1px 0 rgba(255,255,255,0.5)}
+[data-theme='dark'] .controls-panel{box-shadow:6px 6px 20px rgba(0,0,0,0.45),-3px -3px 10px rgba(255,255,255,0.02),inset 0 1px 0 rgba(255,255,255,0.03)}
+.controls-row{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px}
+.speed-control{display:flex;align-items:center;gap:.5rem}
+.speed-control label{font-size:.75rem;color:var(--text-muted);white-space:nowrap}
+.speed-label{font-size:.78rem;color:var(--accent-blue);font-weight:700;min-width:30px}
+.module-footer{border-top:1px solid var(--border-subtle);padding:1.25rem 0;background:var(--bg-surface)}
+.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:1rem}
+.footer-left{display:flex;align-items:center;gap:.6rem}
+.wordmark{font-family:var(--font-mono);font-size:.88rem;font-weight:700}
+.wm-os{color:var(--accent-primary)}
+.wm-sim{color:var(--text-primary)}
+.footer-nav{display:flex;gap:1rem}
+.footer-nav a{font-size:.78rem;color:var(--text-muted);text-decoration:none;transition:color var(--t-fast)}
+.footer-nav a:hover{color:var(--text-primary)}
+#theoryContent{animation:fadeUp .35s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:var(--accent-primary)}
+:focus-visible{outline:2px solid var(--accent-blue);outline-offset:2px;border-radius:var(--r-xs)}
+@media(max-width:1024px){.module-header{flex-direction:column;align-items:flex-start}.module-header-icon{display:none}.theory-grid{grid-template-columns:1fr}}
+@media(max-width:768px){.topnav{padding:0 1rem}.module-title{font-size:1.75rem}.simulator-main{padding:20px 0 40px}.stats-grid{grid-template-columns:repeat(2,1fr)}.module-header-content{padding:0 1rem 0 1.75rem}}
 
-    <section class="theory-section" id="theoryContent" style="display: none">
-      <div class="container">
-        <div class="theory-grid">
-          <div>
-            <h3 class="section-label">Key Concepts</h3>
-            <div class="concepts-grid">
-              <div class="concept-card">
-                <div class="concept-term">RAID 4 (Block-level Parity)</div>
-                <div class="concept-def">
-                  Block-level striping with a dedicated parity disk.
-                </div>
-              </div>
-              <div class="concept-card">
-                <div class="concept-term">RAID 5 (Distributed Parity)</div>
-                <div class="concept-def">
-                  Parity rotates across disks, balancing write pressure.
-                </div>
-              </div>
-              <div class="concept-card">
-                <div class="concept-term">RAID 6 (Double Parity)</div>
-                <div class="concept-def">
-                  Two parity blocks per stripe; survives two disk failures.
-                </div>
-              </div>
-              <div class="concept-card">
-                <div class="concept-term">RAID 10 (Mirrored Stripe)</div>
-                <div class="concept-def">
-                  Striping across mirrored pairs for high performance and
-                  redundancy.
-                </div>
-              </div>
-            </div>
-          </div>
-          <div>
-            <h3 class="section-label">Comparison Table</h3>
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>RAID Level</th>
-                    <th>Performance</th>
-                    <th>Redundancy</th>
-                    <th>Min Disks</th>
-                    <th>Fault Tolerance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>RAID 4</td>
-                    <td>Good Read</td>
-                    <td>Medium</td>
-                    <td>3</td>
-                    <td>1 drive</td>
-                  </tr>
-                  <tr>
-                    <td>RAID 5</td>
-                    <td>Good Read, Slower Write</td>
-                    <td>Medium</td>
-                    <td>3</td>
-                    <td>1 drive</td>
-                  </tr>
-                  <tr>
-                    <td>RAID 6</td>
-                    <td>Good Read, Slower Write</td>
-                    <td>Very High</td>
-                    <td>4</td>
-                    <td>2 drives</td>
-                  </tr>
-                  <tr>
-                    <td>RAID 10</td>
-                    <td>Excellent</td>
-                    <td>High</td>
-                    <td>4</td>
-                    <td>Up to 1 per mirrored pair</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.viz-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.raid-status-bar {
+  text-align: center;
+  font-family: var(--font-mono);
+  font-weight: bold;
+  padding: 0.5rem;
+  border-radius: var(--r-sm);
+  background: var(--bg-sunken);
+  color: var(--text-primary);
+  transition: all var(--t-normal);
+  border: 1px solid var(--border-subtle);
+}
+.raid-status-bar.failed {
+  background: var(--accent-red-dim);
+  color: var(--accent-red);
+  border-color: var(--accent-red);
+}
+.raid-status-bar.degraded {
+  background: var(--accent-orange-dim);
+  color: var(--accent-orange);
+  border-color: var(--accent-orange);
+}
+.raid-status-bar.rebuilding {
+  background: rgba(234, 179, 8, 0.15); /* Yellow */
+  color: #ca8a04;
+  border-color: #ca8a04;
+}
+
+.raid-array {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  padding: 30px 20px;
+  background: var(--bg-sunken);
+  border-radius: var(--r-md);
+  min-height: 350px;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+}
+
+.disk {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 90px;
+  background: var(--bg-card);
+  border: 2px solid var(--border-default);
+  border-radius: var(--r-sm);
+  padding: 10px;
+  align-items: center;
+  transition: all var(--t-normal);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  justify-content: flex-end; /* blocks stack from bottom */
+}
+
+.disk-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 0;
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-align: center;
+  border-bottom: 1px dashed var(--border-subtle);
+  background: var(--bg-card);
+  border-top-left-radius: var(--r-sm);
+  border-top-right-radius: var(--r-sm);
+  z-index: 2;
+}
+
+.disk-blocks {
+  display: flex;
+  flex-direction: column-reverse; /* stack from bottom up */
+  gap: 4px;
+  width: 100%;
+  margin-top: 36px; /* space for header */
+  flex-grow: 1;
+  justify-content: flex-start;
+}
+
+.disk.failed {
+  border-color: var(--accent-red);
+  background: var(--accent-red-dim);
+  box-shadow: 0 0 15px var(--accent-red-dim);
+}
+
+.disk.failed .disk-header {
+  background: transparent;
+  color: var(--accent-red);
+}
+
+.disk.rebuilding {
+  border-color: #ca8a04;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.2);
+}
+
+.disk.rebuilding .disk-header {
+  color: #ca8a04;
+}
+
+.block {
+  width: 100%;
+  height: 36px;
+  border-radius: var(--r-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: white;
+  transition: all var(--t-fast);
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.block.visible {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Colors */
+.block.data { background: var(--accent-blue); }
+.block.mirror { background: var(--accent-green); }
+.block.parity { background: var(--accent-orange); }
+.block.failed { background: var(--accent-red); color: white; }
+.block.rebuilding { background: #eab308; color: black; }
+.block.empty { background: transparent; border: 1px dashed var(--border-strong); opacity: 0.5; color: transparent; }
+.block.empty.visible { opacity: 1; }
+
+.legend-row {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  padding: 1rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.legend-box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+.legend-box.data { background: var(--accent-blue); }
+.legend-box.mirror { background: var(--accent-green); }
+.legend-box.parity { background: var(--accent-orange); }
+.legend-box.failed { background: var(--accent-red); }
+.legend-box.rebuilding { background: #eab308; }
+
+.btn-danger:hover {
+  background: var(--accent-red-dim) !important;
+}
+
+  </style>
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../index.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator
+    </a>
+    <div class="nav-center">
+      <svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+        <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+      </svg>
+      <span class="nav-module-name">RAID Simulator II</span>
+    </div>
+    <div class="nav-actions">
+      <button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+        </svg><span class="theory-toggle-label">Theory</span>
+      </button>
+      <button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme">
+        <svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      </button>
+    </div>
+  </nav>
+
+  <header class="module-header">
+    <div class="module-header-content">
+      <div class="module-header-meta">
+        <span class="badge badge-green">Storage</span><span class="badge badge-gray">RAID 4/5/6/10</span>
+      </div>
+      <h1 class="module-title">RAID Simulator II</h1>
+      <p class="module-desc">Explore advanced RAID levels: 4, 5, 6, and 10 with dedicated/rotating parity, double parity, and mirrored striping.</p>
+    </div>
+    <div class="module-header-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/><rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+        <line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/>
+      </svg>
+    </div>
+  </header>
+
+  <section class="theory-section" id="theoryContent" style="display:none">
+    <div class="container">
+      <div class="theory-grid">
+        <div>
+          <h3 class="section-label">Key Concepts</h3>
+          <div class="concepts-grid">
+            <div class="concept-card"><div class="concept-term">RAID 4 (Block-level Parity)</div><div class="concept-def">Block-level striping with a dedicated parity disk.</div></div>
+            <div class="concept-card"><div class="concept-term">RAID 5 (Distributed Parity)</div><div class="concept-def">Parity rotates across disks, balancing write pressure.</div></div>
+            <div class="concept-card"><div class="concept-term">RAID 6 (Double Parity)</div><div class="concept-def">Two parity blocks per stripe; survives two disk failures.</div></div>
+            <div class="concept-card"><div class="concept-term">RAID 10 (Mirrored Stripe)</div><div class="concept-def">Striping across mirrored pairs for high performance and redundancy.</div></div>
           </div>
         </div>
+        <div>
+          <h3 class="section-label">Comparison Table</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>RAID Level</th><th>Performance</th><th>Redundancy</th><th>Min Disks</th><th>Fault Tolerance</th></tr></thead>
+              <tbody>
+                <tr><td>RAID 4</td><td>Good Read</td><td>Medium</td><td>3</td><td>1 drive</td></tr>
+                <tr><td>RAID 5</td><td>Good Read, Slower Write</td><td>Medium</td><td>3</td><td>1 drive</td></tr>
+                <tr><td>RAID 6</td><td>Good Read, Slower Write</td><td>Very High</td><td>4</td><td>2 drives</td></tr>
+                <tr><td>RAID 10</td><td>Excellent</td><td>High</td><td>4</td><td>Up to 1 per mirrored pair</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="simulator-main container">
+    <section class="controls-panel">
+      <div class="tabs algo-tabs" id="raidTabs">
+        <button class="tab-btn active" data-r="4">RAID 4</button>
+        <button class="tab-btn" data-r="5">RAID 5</button>
+        <button class="tab-btn" data-r="6">RAID 6</button>
+        <button class="tab-btn" data-r="10">RAID 10</button>
+      </div>
+      <div class="controls-row mt-4">
+        <label style="font-size:.85rem;font-weight:600">Disks:
+          <input class="form-input form-mono" id="numDisks" type="number" value="6" min="2" max="8" style="width:70px;display:inline-block;margin-left:8px"/>
+        </label>
+        <label style="font-size:.85rem;font-weight:600">Blocks:
+          <input class="form-input form-mono" id="numBlocks" type="number" value="12" min="1" max="64" style="width:70px;display:inline-block;margin-left:8px"/>
+        </label>
+        <label style="font-size:.85rem;font-weight:600">Disk Size:
+          <input class="form-input form-mono" id="diskSize" type="number" value="100" min="10" max="1000" style="width:80px;display:inline-block;margin-left:8px"/>
+        </label>
+        <div class="speed-control" style="margin-left:auto">
+          <label for="speedRange">Speed</label>
+          <input id="speedRange" type="range" min="1" max="5" value="3"/>
+          <span class="speed-label" id="speedLabel">3x</span>
+        </div>
+      </div>
+      <div class="controls-row">
+        <button class="btn btn-primary" id="startBtn">▶ Start Simulation</button>
+        <button class="btn btn-secondary" id="pauseBtn">Pause / Resume</button>
+        <button class="btn btn-secondary" id="stepBtn">Step</button>
+        <button class="btn btn-ghost" id="resetBtn">Reset</button>
+        <button class="btn btn-secondary btn-danger" id="failBtn" style="margin-left:auto;color:var(--accent-red);border-color:var(--accent-red)">Fail Random Disk</button>
+        <button class="btn btn-secondary" id="rebuildBtn" style="color:var(--accent-green);border-color:var(--accent-green)">Rebuild Array</button>
       </div>
     </section>
 
-    <main class="simulator-main container">
-      <section class="controls-panel">
-        <div class="tabs algo-tabs" id="raidTabs">
-          <button class="tab-btn active" data-r="4">RAID 4</button>
-          <button class="tab-btn" data-r="5">RAID 5</button>
-          <button class="tab-btn" data-r="6">RAID 6</button>
-          <button class="tab-btn" data-r="10">RAID 10</button>
-        </div>
-        <div class="controls-row mt-4">
-          <label style="font-size: 0.85rem; font-weight: 600"
-            >Disks:
-            <input
-              class="form-input form-mono"
-              id="numDisks"
-              type="number"
-              value="6"
-              min="2"
-              max="8"
-              style="width: 70px; display: inline-block; margin-left: 8px"
-          /></label>
-          <label style="font-size: 0.85rem; font-weight: 600"
-            >Blocks:
-            <input
-              class="form-input form-mono"
-              id="numBlocks"
-              type="number"
-              value="12"
-              min="1"
-              max="64"
-              style="width: 70px; display: inline-block; margin-left: 8px"
-          /></label>
-          <label style="font-size: 0.85rem; font-weight: 600"
-            >Disk Size:
-            <input
-              class="form-input form-mono"
-              id="diskSize"
-              type="number"
-              value="100"
-              min="10"
-              max="1000"
-              style="width: 80px; display: inline-block; margin-left: 8px"
-          /></label>
-          <div class="speed-control" style="margin-left: auto">
-            <label for="speedRange">Speed</label
-            ><input
-              id="speedRange"
-              type="range"
-              min="1"
-              max="5"
-              value="3"
-            /><span class="speed-label" id="speedLabel">3x</span>
-          </div>
-        </div>
-        <div class="controls-row">
-          <button class="btn btn-primary" id="startBtn">
-            ▶ Start Simulation
-          </button>
-          <button class="btn btn-secondary" id="pauseBtn">
-            Pause / Resume
-          </button>
-          <button class="btn btn-secondary" id="stepBtn">Step</button>
-          <button class="btn btn-ghost" id="resetBtn">Reset</button>
-          <button
-            class="btn btn-secondary btn-danger"
-            id="failBtn"
-            style="
-              margin-left: auto;
-              color: var(--accent-red);
-              border-color: var(--accent-red);
-            "
-          >
-            Fail Random Disk
-          </button>
-          <button
-            class="btn btn-secondary"
-            id="rebuildBtn"
-            style="
-              color: var(--accent-green);
-              border-color: var(--accent-green);
-            "
-          >
-            Rebuild Array
-          </button>
-        </div>
-      </section>
-
-      <section class="controls-panel viz-panel">
-        <div class="raid-status-bar" id="raidStatusBar">
-          Array Status: Healthy
-        </div>
-        <div class="raid-array" id="raidArray"></div>
-        <div class="legend-row">
-          <span class="legend-item"
-            ><span class="legend-box data"></span> Data</span
-          ><span class="legend-item"
-            ><span class="legend-box mirror"></span> Mirror</span
-          ><span class="legend-item"
-            ><span class="legend-box parity"></span> Parity</span
-          ><span class="legend-item"
-            ><span class="legend-box failed"></span> Failed</span
-          ><span class="legend-item"
-            ><span class="legend-box rebuilding"></span> Rebuilding</span
-          >
-        </div>
-        <div class="stats-grid mt-4">
-          <div class="stat-card">
-            <div class="stat-value" id="statUsable">0</div>
-            <div class="stat-label">Usable Storage</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="statTolerance">0</div>
-            <div class="stat-label">Fault Tolerance (Disks)</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="statEfficiency">0%</div>
-            <div class="stat-label">Storage Efficiency</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-value" id="statStatus">Healthy</div>
-            <div class="stat-label" id="statStatusLabel">System State</div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="module-footer">
-      <div class="container footer-inner">
-        <div class="footer-left">
-          <a href="../index.html" class="wordmark" style="text-decoration: none"
-            ><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a
-          ><span style="color: var(--border-default)">·</span
-          ><span style="font-size: 0.78rem; color: var(--text-muted)"
-            >RAID Simulator II</span
-          >
-        </div>
-        <nav class="footer-nav"><a href="../index.html">All Modules</a></nav>
+    <section class="controls-panel viz-panel">
+      <div class="raid-status-bar" id="raidStatusBar">Array Status: Healthy</div>
+      <div class="raid-array" id="raidArray"></div>
+      <div class="legend-row">
+        <span class="legend-item"><span class="legend-box data"></span> Data</span>
+        <span class="legend-item"><span class="legend-box mirror"></span> Mirror</span>
+        <span class="legend-item"><span class="legend-box parity"></span> Parity</span>
+        <span class="legend-item"><span class="legend-box failed"></span> Failed</span>
+        <span class="legend-item"><span class="legend-box rebuilding"></span> Rebuilding</span>
       </div>
-    </footer>
+      <div class="stats-grid mt-4">
+        <div class="stat-card"><div class="stat-value" id="statUsable">0</div><div class="stat-label">Usable Storage</div></div>
+        <div class="stat-card"><div class="stat-value" id="statTolerance">0</div><div class="stat-label">Fault Tolerance (Disks)</div></div>
+        <div class="stat-card"><div class="stat-value" id="statEfficiency">0%</div><div class="stat-label">Storage Efficiency</div></div>
+        <div class="stat-card"><div class="stat-value" id="statStatus">Healthy</div><div class="stat-label" id="statStatusLabel">System State</div></div>
+      </div>
+    </section>
+  </main>
 
-    <div id="toast-container"></div>
-    <script src="../shared.js"></script>
-    <script src="../raid-simulator/raid-simulator.js"></script>
-  </body>
+  <footer class="module-footer">
+    <div class="container footer-inner">
+      <div class="footer-left">
+        <a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a>
+        <span style="color:var(--border-default)">·</span>
+        <span style="font-size:.78rem;color:var(--text-muted)">RAID Simulator II</span>
+      </div>
+      <nav class="footer-nav"><a href="../index.html">All Modules</a></nav>
+    </div>
+  </footer>
+
+  <div id="toast-container"></div>
+  <script>
+const ThemeManager = {
+  key: 'os-sim-theme',
+  init() {
+    const saved = localStorage.getItem(this.key) || 'light';
+    this.apply(saved);
+  },
+  toggle() {
+    const cur = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = cur === 'dark' ? 'light' : 'dark';
+    this.apply(next);
+    localStorage.setItem(this.key, next);
+  },
+  apply(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    document.querySelectorAll('#themeIcon').forEach(icon => {
+      if (theme === 'dark') {
+        icon.innerHTML = '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>';
+      } else {
+        icon.innerHTML = '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>';
+      }
+    });
+  }
+};
+
+document.addEventListener('DOMContentLoaded', () => ThemeManager.init());
+
+function toggleTheory(){const panel=document.getElementById('theoryContent');const btn=document.getElementById('theoryToggleBtn');if(!panel)return;const open=panel.style.display!=='none';panel.style.display=open?'none':'block';if(btn){const lab=btn.querySelector('.theory-toggle-label');if(lab)lab.textContent=open?'Theory':'Hide';else btn.textContent=open?'Show Theory':'Hide Theory'}}
+
+  </script>
+  <script>
+document.addEventListener("DOMContentLoaded", () => {
+  // DOM Elements
+  const raidTabs = document.querySelectorAll("#raidTabs .tab-btn");
+  const numDisksInput = document.getElementById("numDisks");
+  const numBlocksInput = document.getElementById("numBlocks");
+  const diskSizeInput = document.getElementById("diskSize");
+  const speedRange = document.getElementById("speedRange");
+  const speedLabel = document.getElementById("speedLabel");
+
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const stepBtn = document.getElementById("stepBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const failBtn = document.getElementById("failBtn");
+  const rebuildBtn = document.getElementById("rebuildBtn");
+
+  const raidArrayContainer = document.getElementById("raidArray");
+  const raidStatusBar = document.getElementById("raidStatusBar");
+
+  const statUsable = document.getElementById("statUsable");
+  const statTolerance = document.getElementById("statTolerance");
+  const statEfficiency = document.getElementById("statEfficiency");
+  const statStatus = document.getElementById("statStatus");
+
+  // State
+  let currentRaid = parseInt(
+    document.querySelector("#raidTabs .tab-btn.active")?.dataset.r || "0",
+    10,
+  ); // 0, 1, 2, 3, 4, 5, 6, 10
+  let disks = []; // { status: 'healthy' | 'failed' | 'rebuilding', dom: HTMLElement, blocksDom: HTMLElement }
+  let layoutSteps = [];
+  let currentStepIdx = 0;
+  let isAnimating = false;
+  let animTimer = null;
+
+  // Config validation on change
+  raidTabs.forEach((tab) => {
+    tab.addEventListener("click", (e) => {
+      raidTabs.forEach((t) => t.classList.remove("active"));
+      e.target.classList.add("active");
+      currentRaid = parseInt(e.target.dataset.r);
+      validateConfig();
+      updateMetrics();
+      resetSimulation();
+    });
+  });
+
+  numDisksInput.addEventListener("change", () => {
+    validateConfig();
+    updateMetrics();
+    resetSimulation();
+  });
+  numBlocksInput.addEventListener("change", () => {
+    resetSimulation();
+  });
+  diskSizeInput.addEventListener("change", () => {
+    updateMetrics();
+  });
+  speedRange.addEventListener("input", (e) => {
+    speedLabel.textContent = e.target.value + "x";
+  });
+
+  startBtn.addEventListener("click", startSimulation);
+  pauseBtn.addEventListener("click", togglePause);
+  stepBtn.addEventListener("click", stepSimulation);
+  resetBtn.addEventListener("click", resetSimulation);
+  failBtn.addEventListener("click", failRandomDisk);
+  rebuildBtn.addEventListener("click", rebuildArray);
+
+  function validateConfig() {
+    let d = parseInt(numDisksInput.value);
+    if (currentRaid === 1) d = 2;
+    if (currentRaid === 2) d = Math.max(3, d);
+    if (currentRaid === 3) d = Math.max(3, d);
+    if (currentRaid === 4) d = Math.max(3, d);
+    if (currentRaid === 5 && d < 3) d = Math.max(3, d);
+    if (currentRaid === 6) d = Math.max(4, d);
+    if (currentRaid === 10) {
+      d = Math.max(4, d);
+      if (d % 2 !== 0) d -= 1;
+    }
+    numDisksInput.value = d;
+  }
+
+  function updateMetrics() {
+    let d = parseInt(numDisksInput.value);
+    let s = parseInt(diskSizeInput.value);
+
+    let usable = 0,
+      tol = "",
+      eff = 0;
+
+    if (currentRaid === 0) {
+      usable = d * s;
+      tol = "0 (None)";
+      eff = 100;
+    } else if (currentRaid === 1) {
+      usable = s;
+      tol = "1 Drive";
+      eff = 50;
+    } else if (currentRaid === 2) {
+      const parityDisks = Math.max(1, Math.ceil(Math.log2(d + 1)));
+      const dataDisks = Math.max(1, d - parityDisks);
+      usable = dataDisks * s;
+      tol = "1 Drive (ECC)";
+      eff = Math.round((dataDisks / d) * 100);
+    } else if (currentRaid === 3) {
+      usable = (d - 1) * s;
+      tol = "1 Drive";
+      eff = Math.round(((d - 1) / d) * 100);
+    } else if (currentRaid === 4) {
+      usable = (d - 1) * s;
+      tol = "1 Drive";
+      eff = Math.round(((d - 1) / d) * 100);
+    } else if (currentRaid === 5) {
+      usable = (d - 1) * s;
+      tol = "1 Drive";
+      eff = Math.round(((d - 1) / d) * 100);
+    } else if (currentRaid === 6) {
+      usable = (d - 2) * s;
+      tol = "2 Drives";
+      eff = Math.round(((d - 2) / d) * 100);
+    } else if (currentRaid === 10) {
+      usable = (d / 2) * s;
+      tol = "1 per pair";
+      eff = 50;
+    }
+
+    statUsable.textContent = usable + " GB";
+    statTolerance.textContent = tol;
+    statEfficiency.textContent = eff + "%";
+  }
+
+  function resetSimulation() {
+    stopAnim();
+    currentStepIdx = 0;
+    isAnimating = false;
+
+    let d = parseInt(numDisksInput.value);
+    raidArrayContainer.innerHTML = "";
+    disks = [];
+
+    for (let i = 0; i < d; i++) {
+      let diskDiv = document.createElement("div");
+      diskDiv.className = "disk";
+      let header = document.createElement("div");
+      header.className = "disk-header";
+      header.textContent = "Disk " + i;
+      let blocksCont = document.createElement("div");
+      blocksCont.className = "disk-blocks";
+
+      diskDiv.appendChild(header);
+      diskDiv.appendChild(blocksCont);
+      raidArrayContainer.appendChild(diskDiv);
+
+      disks.push({
+        status: "healthy",
+        dom: diskDiv,
+        blocksDom: blocksCont,
+      });
+    }
+
+    updateStatus();
+    generateLayout();
+  }
+
+  function generateLayout() {
+    layoutSteps = [];
+    let d = parseInt(numDisksInput.value);
+    let b = parseInt(numBlocksInput.value);
+
+    let dataLabels = Array.from(
+      { length: b },
+      (_, i) => String.fromCharCode(65 + Math.floor(i / 10)) + (i % 10),
+    ); // A0, A1...
+
+    if (currentRaid === 0) {
+      for (let i = 0; i < b; i++) {
+        let diskIdx = i % d;
+        layoutSteps.push([
+          { disk: diskIdx, type: "data", label: dataLabels[i] },
+        ]);
+      }
+    } else if (currentRaid === 1) {
+      for (let i = 0; i < b; i++) {
+        layoutSteps.push([
+          { disk: 0, type: "data", label: dataLabels[i] },
+          { disk: 1, type: "mirror", label: dataLabels[i] },
+        ]);
+      }
+    } else if (currentRaid === 2) {
+      const parityCount = Math.max(1, Math.ceil(Math.log2(d + 1)));
+      const dataCount = Math.max(1, d - parityCount);
+      let dataWritten = 0;
+      let stripeIdx = 0;
+
+      while (dataWritten < b) {
+        let actions = [];
+        for (let i = 0; i < dataCount && dataWritten < b; i++) {
+          actions.push({
+            disk: i,
+            type: "data",
+            label: dataLabels[dataWritten],
+          });
+          dataWritten++;
+        }
+        for (let i = dataCount; i < d; i++) {
+          actions.push({ disk: i, type: "parity", label: "ECC" + stripeIdx });
+        }
+        layoutSteps.push(actions);
+        stripeIdx++;
+      }
+    } else if (currentRaid === 3) {
+      const parityDisk = d - 1;
+      let dataWritten = 0;
+      let stripeIdx = 0;
+      while (dataWritten < b) {
+        let actions = [];
+        for (let i = 0; i < parityDisk && dataWritten < b; i++) {
+          actions.push({
+            disk: i,
+            type: "data",
+            label: dataLabels[dataWritten],
+          });
+          dataWritten++;
+        }
+        actions.push({
+          disk: parityDisk,
+          type: "parity",
+          label: "P" + stripeIdx,
+        });
+        layoutSteps.push(actions);
+        stripeIdx++;
+      }
+    } else if (currentRaid === 4) {
+      const parityDisk = d - 1;
+      let dataWritten = 0;
+      let stripeIdx = 0;
+      while (dataWritten < b) {
+        let actions = [];
+        for (let i = 0; i < parityDisk && dataWritten < b; i++) {
+          actions.push({
+            disk: i,
+            type: "data",
+            label: dataLabels[dataWritten],
+          });
+          dataWritten++;
+        }
+        actions.push({
+          disk: parityDisk,
+          type: "parity",
+          label: "P" + stripeIdx,
+        });
+        layoutSteps.push(actions);
+        stripeIdx++;
+      }
+    } else if (currentRaid === 5) {
+      let pIdx = d - 1;
+      let dataWritten = 0;
+      let stripeIdx = 0;
+
+      while (dataWritten < b) {
+        let actions = [];
+        for (let i = 0; i < d; i++) {
+          if (i === pIdx) {
+            actions.push({ disk: i, type: "parity", label: "P" + stripeIdx });
+          } else {
+            if (dataWritten < b) {
+              actions.push({
+                disk: i,
+                type: "data",
+                label: dataLabels[dataWritten],
+              });
+              dataWritten++;
+            }
+          }
+        }
+        layoutSteps.push(actions);
+        pIdx = (pIdx - 1 + d) % d;
+        stripeIdx++;
+      }
+    } else if (currentRaid === 6) {
+      let pIdx = d - 2;
+      let qIdx = d - 1;
+      let dataWritten = 0;
+      let stripeIdx = 0;
+
+      while (dataWritten < b) {
+        let actions = [];
+        for (let i = 0; i < d; i++) {
+          if (i === pIdx) {
+            actions.push({ disk: i, type: "parity", label: "P" + stripeIdx });
+          } else if (i === qIdx) {
+            actions.push({ disk: i, type: "parity", label: "Q" + stripeIdx });
+          } else if (dataWritten < b) {
+            actions.push({
+              disk: i,
+              type: "data",
+              label: dataLabels[dataWritten],
+            });
+            dataWritten++;
+          }
+        }
+        layoutSteps.push(actions);
+        pIdx = (pIdx - 1 + d) % d;
+        qIdx = (qIdx - 1 + d) % d;
+        if (pIdx === qIdx) pIdx = (pIdx - 1 + d) % d;
+        stripeIdx++;
+      }
+    } else if (currentRaid === 10) {
+      let pairs = d / 2;
+      for (let i = 0; i < b; i++) {
+        let pairIdx = i % pairs;
+        let d1 = pairIdx * 2;
+        let d2 = d1 + 1;
+        layoutSteps.push([
+          { disk: d1, type: "data", label: dataLabels[i] },
+          { disk: d2, type: "mirror", label: dataLabels[i] },
+        ]);
+      }
+    }
+  }
+
+  function startSimulation() {
+    if (
+      currentStepIdx >= layoutSteps.length &&
+      !disks.some((d) => d.status === "rebuilding")
+    ) {
+      resetSimulation();
+    }
+    if (disks.some((d) => d.status === "failed" && currentRaid === 0)) {
+      showToast("Cannot write to failed RAID 0 array.", "error");
+      return;
+    }
+    isAnimating = true;
+    nextAnimStep();
+  }
+
+  function togglePause() {
+    if (isAnimating) {
+      isAnimating = false;
+      stopAnim();
+    } else {
+      isAnimating = true;
+      nextAnimStep();
+    }
+  }
+
+  function stepSimulation() {
+    stopAnim();
+    isAnimating = false;
+    executeStep();
+  }
+
+  function stopAnim() {
+    if (animTimer) clearTimeout(animTimer);
+    animTimer = null;
+  }
+
+  function nextAnimStep() {
+    if (!isAnimating) return;
+    executeStep();
+    if (currentStepIdx < layoutSteps.length) {
+      let speed = 800 - parseInt(speedRange.value) * 140;
+      animTimer = setTimeout(nextAnimStep, speed);
+    } else {
+      isAnimating = false;
+    }
+  }
+
+  function executeStep() {
+    if (currentStepIdx >= layoutSteps.length) return;
+
+    let actions = layoutSteps[currentStepIdx];
+    actions.forEach((act) => {
+      let disk = disks[act.disk];
+      let block = document.createElement("div");
+      block.className = `block ${act.type}`;
+      block.textContent = act.label;
+
+      if (disk.status === "failed") {
+        block.className = "block failed";
+        block.textContent = "X";
+      }
+
+      disk.blocksDom.appendChild(block);
+
+      // Trigger layout reflow for animation
+      void block.offsetWidth;
+      block.classList.add("visible");
+    });
+
+    currentStepIdx++;
+  }
+
+  function failRandomDisk() {
+    let healthy = disks
+      .map((d, i) => (d.status === "healthy" ? i : -1))
+      .filter((i) => i !== -1);
+    if (healthy.length === 0)
+      return showToast("No healthy disks left to fail.", "error");
+
+    let target = healthy[Math.floor(Math.random() * healthy.length)];
+    let disk = disks[target];
+    disk.status = "failed";
+    disk.dom.classList.add("failed");
+
+    // Turn existing blocks red
+    let blocks = disk.blocksDom.querySelectorAll(".block");
+    blocks.forEach((b) => {
+      b.className = "block visible failed";
+      b.textContent = "X";
+    });
+
+    updateStatus();
+  }
+
+  function rebuildArray() {
+    let failed = disks
+      .map((d, i) => (d.status === "failed" ? i : -1))
+      .filter((i) => i !== -1);
+    if (failed.length === 0)
+      return showToast("No failed disks to rebuild.", "error");
+
+    if (currentRaid === 0)
+      return showToast("Cannot rebuild RAID 0. Data is lost.", "error");
+    if (currentRaid === 2 && failed.length > 1)
+      return showToast("RAID 2 cannot survive >1 disk failure.", "error");
+    if (currentRaid === 3 && failed.length > 1)
+      return showToast("RAID 3 cannot survive >1 disk failure.", "error");
+    if (currentRaid === 4 && failed.length > 1)
+      return showToast("RAID 4 cannot survive >1 disk failure.", "error");
+    if (currentRaid === 5 && failed.length > 1)
+      return showToast("RAID 5 cannot survive >1 disk failure.", "error");
+    if (currentRaid === 6 && failed.length > 2)
+      return showToast("RAID 6 cannot survive >2 disk failures.", "error");
+    if (currentRaid === 10) {
+      let lost = false;
+      for (let i = 0; i < disks.length; i += 2) {
+        if (disks[i].status === "failed" && disks[i + 1].status === "failed")
+          lost = true;
+      }
+      if (lost)
+        return showToast("Both mirrored disks failed. Data lost.", "error");
+    }
+    if (currentRaid === 1 && failed.length > 1)
+      return showToast("RAID 1 data lost.", "error");
+
+    stopAnim();
+    isAnimating = false;
+
+    // Mark as rebuilding
+    failed.forEach((idx) => {
+      let disk = disks[idx];
+      disk.status = "rebuilding";
+      disk.dom.classList.remove("failed");
+      disk.dom.classList.add("rebuilding");
+      disk.blocksDom.innerHTML = "";
+    });
+
+    updateStatus();
+
+    // Rebuild logic
+    let rebuildSteps = [];
+    for (let s = 0; s < currentStepIdx; s++) {
+      let actions = layoutSteps[s];
+      let stepRebuilds = [];
+      actions.forEach((act) => {
+        if (failed.includes(act.disk)) {
+          stepRebuilds.push({
+            disk: act.disk,
+            type: "rebuilding",
+            label: act.label,
+            origType: act.type,
+          });
+        }
+      });
+      if (stepRebuilds.length > 0) {
+        rebuildSteps.push(stepRebuilds);
+      }
+    }
+
+    let rIdx = 0;
+    function doRebuildStep() {
+      if (rIdx >= rebuildSteps.length) {
+        failed.forEach((idx) => {
+          let disk = disks[idx];
+          disk.status = "healthy";
+          disk.dom.classList.remove("rebuilding");
+          let blocks = disk.blocksDom.querySelectorAll(".block");
+          blocks.forEach((b) => {
+            let ot = b.dataset.orig;
+            b.className = `block visible ${ot}`;
+          });
+        });
+        updateStatus();
+        showToast("Array Rebuilt Successfully", "success");
+        return;
+      }
+
+      let actions = rebuildSteps[rIdx];
+      actions.forEach((act) => {
+        let disk = disks[act.disk];
+        let block = document.createElement("div");
+        block.className = `block ${act.type}`;
+        block.textContent = act.label;
+        block.dataset.orig = act.origType;
+        disk.blocksDom.appendChild(block);
+        void block.offsetWidth;
+        block.classList.add("visible");
+      });
+
+      rIdx++;
+      let speed = 800 - parseInt(speedRange.value) * 140;
+      animTimer = setTimeout(doRebuildStep, speed);
+    }
+
+    doRebuildStep();
+  }
+
+  function updateStatus() {
+    let failedCount = disks.filter((d) => d.status === "failed").length;
+    let rebuildCount = disks.filter((d) => d.status === "rebuilding").length;
+
+    raidStatusBar.className = "raid-status-bar";
+
+    if (failedCount === 0 && rebuildCount === 0) {
+      raidStatusBar.textContent = "Array Status: Healthy";
+      statStatus.textContent = "Healthy";
+      statStatus.style.color = "var(--accent-green)";
+    } else if (rebuildCount > 0) {
+      raidStatusBar.classList.add("rebuilding");
+      raidStatusBar.textContent = "Array Status: Rebuilding...";
+      statStatus.textContent = "Rebuilding";
+      statStatus.style.color = "#ca8a04";
+    } else {
+      let isCatastrophic = false;
+      if (currentRaid === 0 && failedCount > 0) isCatastrophic = true;
+      if (
+        (currentRaid === 2 ||
+          currentRaid === 3 ||
+          currentRaid === 4 ||
+          currentRaid === 5) &&
+        failedCount > 1
+      )
+        isCatastrophic = true;
+      if (currentRaid === 6 && failedCount > 2) isCatastrophic = true;
+      if (currentRaid === 1 && failedCount > 1) isCatastrophic = true;
+      if (currentRaid === 10) {
+        for (let i = 0; i < disks.length; i += 2) {
+          if (disks[i].status === "failed" && disks[i + 1].status === "failed")
+            isCatastrophic = true;
+        }
+      }
+
+      if (isCatastrophic) {
+        raidStatusBar.classList.add("failed");
+        raidStatusBar.textContent =
+          "Array Status: CATASTROPHIC FAILURE (Data Lost)";
+        statStatus.textContent = "Failed";
+        statStatus.style.color = "var(--accent-red)";
+      } else {
+        raidStatusBar.classList.add("degraded");
+        raidStatusBar.textContent = "Array Status: Degraded (Vulnerable)";
+        statStatus.textContent = "Degraded";
+        statStatus.style.color = "var(--accent-orange)";
+      }
+    }
+  }
+
+  function showToast(msg, type = "success") {
+    const tc = document.getElementById("toast-container");
+    if (!tc) return;
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    let icon =
+      type === "success"
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    toast.innerHTML = `${icon} <span>${msg}</span>`;
+    tc.appendChild(toast);
+    requestAnimationFrame(() => {
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    });
+  }
+
+  validateConfig();
+  updateMetrics();
+  resetSimulation();
+});
+
+  </script>
+</body>
 </html>
