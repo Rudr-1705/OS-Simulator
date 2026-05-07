@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RAID Simulator II — OS Simulator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../shared.css" />
+    <link rel="stylesheet" href="../raid-simulator/raid-simulator.css" />
+  </head>
+  <body>
+    <nav class="topnav">
+      <a href="../index.html" class="nav-back">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M10 3L5 8l5 5" /></svg
+        >OS Simulator
+      </a>
+      <div class="nav-center">
+        <svg
+          class="nav-module-icon"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.8"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+          <line x1="6" y1="6" x2="6.01" y2="6" />
+          <line x1="6" y1="18" x2="6.01" y2="18" />
+        </svg>
+        <span class="nav-module-name">RAID Simulator II</span>
+      </div>
+      <div class="nav-actions">
+        <button
+          class="theory-toggle-btn"
+          onclick="toggleTheory()"
+          id="theoryToggleBtn"
+        >
+          <svg
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="16" x2="12" y2="12" />
+            <line x1="12" y1="8" x2="12.01" y2="8" /></svg
+          ><span class="theory-toggle-label">Theory</span>
+        </button>
+        <button
+          class="theme-btn"
+          id="themeToggle"
+          onclick="ThemeManager.toggle()"
+          aria-label="Toggle theme"
+        >
+          <svg
+            id="themeIcon"
+            width="13"
+            height="13"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+
+    <header class="module-header">
+      <div class="module-header-content">
+        <div class="module-header-meta">
+          <span class="badge badge-green">Storage</span
+          ><span class="badge badge-gray">RAID 4/5/6/10</span>
+        </div>
+        <h1 class="module-title">RAID Simulator II</h1>
+        <p class="module-desc">
+          Explore advanced RAID levels: 4, 5, 6, and 10 with dedicated/rotating
+          parity, double parity, and mirrored striping.
+        </p>
+      </div>
+      <div class="module-header-icon">
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+          <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+          <line x1="6" y1="6" x2="6.01" y2="6" />
+          <line x1="6" y1="18" x2="6.01" y2="18" />
+        </svg>
+      </div>
+    </header>
+
+    <section class="theory-section" id="theoryContent" style="display: none">
+      <div class="container">
+        <div class="theory-grid">
+          <div>
+            <h3 class="section-label">Key Concepts</h3>
+            <div class="concepts-grid">
+              <div class="concept-card">
+                <div class="concept-term">RAID 4 (Block-level Parity)</div>
+                <div class="concept-def">
+                  Block-level striping with a dedicated parity disk.
+                </div>
+              </div>
+              <div class="concept-card">
+                <div class="concept-term">RAID 5 (Distributed Parity)</div>
+                <div class="concept-def">
+                  Parity rotates across disks, balancing write pressure.
+                </div>
+              </div>
+              <div class="concept-card">
+                <div class="concept-term">RAID 6 (Double Parity)</div>
+                <div class="concept-def">
+                  Two parity blocks per stripe; survives two disk failures.
+                </div>
+              </div>
+              <div class="concept-card">
+                <div class="concept-term">RAID 10 (Mirrored Stripe)</div>
+                <div class="concept-def">
+                  Striping across mirrored pairs for high performance and
+                  redundancy.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h3 class="section-label">Comparison Table</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>RAID Level</th>
+                    <th>Performance</th>
+                    <th>Redundancy</th>
+                    <th>Min Disks</th>
+                    <th>Fault Tolerance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>RAID 4</td>
+                    <td>Good Read</td>
+                    <td>Medium</td>
+                    <td>3</td>
+                    <td>1 drive</td>
+                  </tr>
+                  <tr>
+                    <td>RAID 5</td>
+                    <td>Good Read, Slower Write</td>
+                    <td>Medium</td>
+                    <td>3</td>
+                    <td>1 drive</td>
+                  </tr>
+                  <tr>
+                    <td>RAID 6</td>
+                    <td>Good Read, Slower Write</td>
+                    <td>Very High</td>
+                    <td>4</td>
+                    <td>2 drives</td>
+                  </tr>
+                  <tr>
+                    <td>RAID 10</td>
+                    <td>Excellent</td>
+                    <td>High</td>
+                    <td>4</td>
+                    <td>Up to 1 per mirrored pair</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <main class="simulator-main container">
+      <section class="controls-panel">
+        <div class="tabs algo-tabs" id="raidTabs">
+          <button class="tab-btn active" data-r="4">RAID 4</button>
+          <button class="tab-btn" data-r="5">RAID 5</button>
+          <button class="tab-btn" data-r="6">RAID 6</button>
+          <button class="tab-btn" data-r="10">RAID 10</button>
+        </div>
+        <div class="controls-row mt-4">
+          <label style="font-size: 0.85rem; font-weight: 600"
+            >Disks:
+            <input
+              class="form-input form-mono"
+              id="numDisks"
+              type="number"
+              value="6"
+              min="2"
+              max="8"
+              style="width: 70px; display: inline-block; margin-left: 8px"
+          /></label>
+          <label style="font-size: 0.85rem; font-weight: 600"
+            >Blocks:
+            <input
+              class="form-input form-mono"
+              id="numBlocks"
+              type="number"
+              value="12"
+              min="1"
+              max="64"
+              style="width: 70px; display: inline-block; margin-left: 8px"
+          /></label>
+          <label style="font-size: 0.85rem; font-weight: 600"
+            >Disk Size:
+            <input
+              class="form-input form-mono"
+              id="diskSize"
+              type="number"
+              value="100"
+              min="10"
+              max="1000"
+              style="width: 80px; display: inline-block; margin-left: 8px"
+          /></label>
+          <div class="speed-control" style="margin-left: auto">
+            <label for="speedRange">Speed</label
+            ><input
+              id="speedRange"
+              type="range"
+              min="1"
+              max="5"
+              value="3"
+            /><span class="speed-label" id="speedLabel">3x</span>
+          </div>
+        </div>
+        <div class="controls-row">
+          <button class="btn btn-primary" id="startBtn">
+            ▶ Start Simulation
+          </button>
+          <button class="btn btn-secondary" id="pauseBtn">
+            Pause / Resume
+          </button>
+          <button class="btn btn-secondary" id="stepBtn">Step</button>
+          <button class="btn btn-ghost" id="resetBtn">Reset</button>
+          <button
+            class="btn btn-secondary btn-danger"
+            id="failBtn"
+            style="
+              margin-left: auto;
+              color: var(--accent-red);
+              border-color: var(--accent-red);
+            "
+          >
+            Fail Random Disk
+          </button>
+          <button
+            class="btn btn-secondary"
+            id="rebuildBtn"
+            style="
+              color: var(--accent-green);
+              border-color: var(--accent-green);
+            "
+          >
+            Rebuild Array
+          </button>
+        </div>
+      </section>
+
+      <section class="controls-panel viz-panel">
+        <div class="raid-status-bar" id="raidStatusBar">
+          Array Status: Healthy
+        </div>
+        <div class="raid-array" id="raidArray"></div>
+        <div class="legend-row">
+          <span class="legend-item"
+            ><span class="legend-box data"></span> Data</span
+          ><span class="legend-item"
+            ><span class="legend-box mirror"></span> Mirror</span
+          ><span class="legend-item"
+            ><span class="legend-box parity"></span> Parity</span
+          ><span class="legend-item"
+            ><span class="legend-box failed"></span> Failed</span
+          ><span class="legend-item"
+            ><span class="legend-box rebuilding"></span> Rebuilding</span
+          >
+        </div>
+        <div class="stats-grid mt-4">
+          <div class="stat-card">
+            <div class="stat-value" id="statUsable">0</div>
+            <div class="stat-label">Usable Storage</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statTolerance">0</div>
+            <div class="stat-label">Fault Tolerance (Disks)</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statEfficiency">0%</div>
+            <div class="stat-label">Storage Efficiency</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="statStatus">Healthy</div>
+            <div class="stat-label" id="statStatusLabel">System State</div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="module-footer">
+      <div class="container footer-inner">
+        <div class="footer-left">
+          <a href="../index.html" class="wordmark" style="text-decoration: none"
+            ><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a
+          ><span style="color: var(--border-default)">·</span
+          ><span style="font-size: 0.78rem; color: var(--text-muted)"
+            >RAID Simulator II</span
+          >
+        </div>
+        <nav class="footer-nav"><a href="../index.html">All Modules</a></nav>
+      </div>
+    </footer>
+
+    <div id="toast-container"></div>
+    <script src="../shared.js"></script>
+    <script src="../raid-simulator/raid-simulator.js"></script>
+  </body>
+</html>

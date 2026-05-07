@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Page Replacement — OS Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/>
+  <link rel="stylesheet" href="./page-replacement.css"/>
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a>
+    <div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg><span class="nav-module-name">Page Replacement</span></div>
+    <div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div>
+  </nav>
+  <header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-purple">Memory</span><span class="badge badge-gray">FIFO/LRU/OPT/Clock</span></div><h1 class="module-title">Page Replacement</h1><p class="module-desc">Step through references and compare page replacement behavior across FIFO, LRU, Optimal, and Clock.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="15" x2="15" y2="15"/></svg></div></header>
+  <section class="theory-section" id="theoryContent" style="display:none"><div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3><div class="concepts-grid"><div class="concept-card"><div class="concept-term">Page Hit</div><div class="concept-def">Referenced page already in a frame.</div></div><div class="concept-card"><div class="concept-term">Page Fault</div><div class="concept-def">Page not present; load from disk.</div></div><div class="concept-card"><div class="concept-term">Belady</div><div class="concept-def">FIFO can fault more with larger frames.</div></div><div class="concept-card"><div class="concept-term">Clock</div><div class="concept-def">Second-chance policy with reference bits.</div></div></div></div><div><h3 class="section-label">Complexity Comparison</h3><div class="table-wrap"><table><thead><tr><th>Algorithm</th><th>Time</th><th>Space</th><th>Best For</th></tr></thead><tbody><tr><td>FIFO</td><td>O(1)</td><td>O(f)</td><td>Simple queues</td></tr><tr><td>LRU</td><td>O(f)</td><td>O(f)</td><td>Temporal locality</td></tr><tr><td>Optimal</td><td>O(f*n)</td><td>O(f)</td><td>Benchmark bound</td></tr><tr><td>Clock</td><td>O(f)</td><td>O(f)</td><td>Low-overhead LRU approx</td></tr></tbody></table></div></div></div></div></section>
+
+  <main class="simulator-main container">
+    <section class="controls-panel">
+      <div class="controls-row">
+        <input class="form-input" id="refInput" value="7 0 1 2 0 3 0 4 2 3 0 3 2" aria-label="Reference string"/>
+        <button class="btn btn-secondary" id="randomRefBtn">Random</button>
+        <input class="form-input form-mono" id="frameCount" type="number" min="1" max="8" value="3" style="width:96px"/>
+      </div>
+      <div class="tabs algo-tabs">
+        <button class="tab-btn active" data-algo="FIFO">FIFO</button>
+        <button class="tab-btn" data-algo="LRU">LRU</button>
+        <button class="tab-btn" data-algo="OPT">Optimal</button>
+        <button class="tab-btn" data-algo="CLOCK">Clock</button>
+      </div>
+      <div class="controls-row">
+        <button class="btn btn-secondary" id="firstBtn">⏮ First</button>
+        <button class="btn btn-secondary" id="prevBtn">◀ Prev</button>
+        <button class="btn btn-primary" id="playBtn">Play</button>
+        <button class="btn btn-secondary" id="nextBtn">▶ Next</button>
+        <button class="btn btn-secondary" id="lastBtn">⏭ Last</button>
+      </div>
+      <div class="speed-control"><label for="speedRange">Speed</label><input id="speedRange" type="range" min="1" max="5" value="3"/><span class="speed-label" id="speedLabel">3x</span></div>
+    </section>
+
+    <section class="controls-panel">
+      <div id="refTape" class="ref-tape"></div>
+      <div id="frames" class="frames-grid"></div>
+      <div class="controls-row">
+        <span id="stepBadge" class="badge badge-gray">Step 0</span>
+        <span id="resultBadge" class="badge badge-blue">Ready</span>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-value" id="faults">0</div><div class="stat-label">Faults</div></div>
+        <div class="stat-card"><div class="stat-value" id="hits">0</div><div class="stat-label">Hits</div></div>
+        <div class="stat-card"><div class="stat-value" id="hitRatio">0%</div><div class="stat-label">Hit Ratio</div></div>
+        <div class="stat-card"><div class="stat-value" id="missRatio">0%</div><div class="stat-label">Miss Ratio</div></div>
+      </div>
+      <div class="compare-chart" id="compareChart"></div>
+    </section>
+  </main>
+  <footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Page Replacement</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+  <div id="toast-container"></div>
+  <script src="../shared.js"></script>
+  <script src="./page-replacement.js"></script>
+</body>
+</html>

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Memory Management — OS Simulator</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/><link rel="stylesheet" href="./memory-management.css"/></head>
+<body>
+<nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg><span class="nav-module-name">Memory Management</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
+<header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-blue">Memory</span><span class="badge badge-gray">Paging</span></div><h1 class="module-title">Memory Management</h1><p class="module-desc">Explore paging, segmentation, and address translation in one place.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg></div></header>
+<section class="theory-section" id="theoryContent" style="display:none">
+<div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
+<div class="concepts-grid">
+  <div class="concept-card"><div class="concept-term">Paging</div><div class="concept-def">Divides logical memory into fixed-size pages, physical into frames. Eliminates external fragmentation.</div></div>
+  <div class="concept-card"><div class="concept-term">Page Table</div><div class="concept-def">Per-process map from virtual page numbers (VPN) to physical frame numbers (PFN).</div></div>
+  <div class="concept-card"><div class="concept-term">Segmentation</div><div class="concept-def">Variable-size segments (code, data, stack). Each has base + limit. Supports logical protection.</div></div>
+  <div class="concept-card"><div class="concept-term">Internal Fragmentation</div><div class="concept-def">Wasted space within a page/segment. Paging wastes up to (page_size - 1) bytes per process.</div></div>
+  <div class="concept-card"><div class="concept-term">Segment Fault</div><div class="concept-def">Offset exceeds segment limit. Hardware raises protection fault → OS terminates or handles process.</div></div>
+  <div class="concept-card"><div class="concept-term">Page Fault</div><div class="concept-def">Referenced page not in physical memory. OS must load it from disk — the most expensive memory operation.</div></div>
+</div></div><div><h3 class="section-label">Comparison</h3><div class="table-wrap">
+<table><thead><tr><th>Technique</th><th>Access</th><th>Overhead</th><th>Best Use</th></tr></thead><tbody>
+  <tr><td>Paging</td><td>O(1) access</td><td>O(n) table</td><td>General purpose OS</td></tr>
+  <tr><td>Segmentation</td><td>O(n) lookup</td><td>O(n)</td><td>Logical memory protection</td></tr>
+</tbody></table></div></div></div></div></section>
+<main class="simulator-main container">
+  <div class="tabs" id="mmTabs" style="max-width:360px;margin-bottom:1.5rem">
+    <button class="tab-btn active" data-mm="paging">Paging</button>
+    <button class="tab-btn" data-mm="segment">Segmentation</button>
+  </div>
+  
+  <div id="mm-paging">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+      <div class="card">
+        <div class="section-label">Paging Configuration</div>
+        <div class="form-group" style="margin-bottom:.75rem">
+          <label class="form-label">Page Size</label>
+          <select id="pageSize" class="form-select">
+            <option value="512">512 B</option>
+            <option value="1024">1 KB</option>
+            <option value="4096" selected>4 KB</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin-bottom:.75rem">
+          <label class="form-label">Number of Frames</label>
+          <input id="numFrames" class="form-input form-mono" type="number" value="8" min="4" max="32">
+        </div>
+        <div class="form-group" style="margin-bottom:1rem">
+          <label class="form-label">Logical Address (hex/dec)</label>
+          <input id="logAddr" class="form-input form-mono" value="0x2A3F" placeholder="0xABCD">
+        </div>
+        <div class="controls-row">
+          <button class="btn btn-primary" id="translateBtn">Translate</button>
+          <button class="btn btn-ghost btn-sm" id="mmInitBtn">Init/Reset Tables</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-label">Translation Result</div>
+        <div id="transResult" style="min-height:120px;display:flex;align-items:flex-start;justify-content:flex-start"></div>
+      </div>
+      <div class="card">
+        <div class="section-label">Page Table</div>
+        <div class="table-wrap" style="max-height:220px;overflow-y:auto">
+          <table><thead><tr><th>VPN</th><th>PFN</th><th>Status</th></tr></thead><tbody id="ptBody"></tbody></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="section-label">Physical Frames</div>
+        <div id="frameGrid" style="display:grid;gap:6px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="mm-segment" style="display:none">
+    <div style="display:grid;grid-template-columns:320px 1fr;gap:1.5rem;align-items:start">
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="section-label">Add Segment</div>
+          <div class="form-group" style="margin-bottom:.5rem">
+            <label class="form-label">Name</label>
+            <input id="segName" class="form-input" value="Code" placeholder="Code">
+          </div>
+          <div class="form-group" style="margin-bottom:.5rem">
+            <label class="form-label">Base Address</label>
+            <input id="segBase" class="form-input form-mono" type="number" value="0">
+          </div>
+          <div class="form-group" style="margin-bottom:.75rem">
+            <label class="form-label">Limit (size in bytes)</label>
+            <input id="segLimit" class="form-input form-mono" type="number" value="1024">
+          </div>
+          <button class="btn btn-primary btn-sm" style="width:100%" onclick="addSegment()">Add Segment</button>
+        </div>
+        <div class="card">
+          <div class="section-label">Translate Address</div>
+          <div class="form-group" style="margin-bottom:.5rem">
+            <label class="form-label">Segment Number</label>
+            <input id="segNum" class="form-input form-mono" type="number" value="0" min="0">
+          </div>
+          <div class="form-group" style="margin-bottom:.75rem">
+            <label class="form-label">Offset</label>
+            <input id="segOff" class="form-input form-mono" type="number" value="100" min="0">
+          </div>
+          <button class="btn btn-primary" style="width:100%" onclick="translateSegment()">Translate</button>
+          <div id="segResult" style="margin-top:1rem;min-height:80px"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:1rem">
+          <div class="section-label">Segment Table</div>
+          <div class="table-wrap">
+            <table><thead><tr><th>#</th><th>Name</th><th>Base</th><th>Limit</th><th></th></tr></thead>
+            <tbody id="segBody"><tr><td colspan="5" style="color:var(--text-muted)">No segments yet.</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="section-label">Memory Map</div>
+          <div id="segBar" style="display:flex;flex-direction:column;border:1px solid var(--border-subtle);border-radius:var(--r-md);min-height:200px;overflow:hidden"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Memory Management</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+<div id="toast-container"></div><script src="../shared.js"></script><script src="./memory-management.js"></script></body></html>

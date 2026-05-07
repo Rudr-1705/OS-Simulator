@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Cache Simulation — OS Simulator</title><link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/><link rel="stylesheet" href="./cache-simulation.css"/></head>
+<body>
+<nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg><span class="nav-module-name">Cache Simulation</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
+<header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-blue">Memory</span><span class="badge badge-gray">AMAT</span></div><h1 class="module-title">Cache Simulation</h1><p class="module-desc">Configure cache size, associativity, and replacement policy. Observe hits, misses, and AMAT across access patterns.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div></header>
+<section class="theory-section" id="theoryContent" style="display:none">
+<div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
+<div class="concepts-grid">
+  <div class="concept-card"><div class="concept-term">Direct Mapped</div><div class="concept-def">Each memory block maps to exactly one cache set. Simple but prone to conflict misses.</div></div>
+  <div class="concept-card"><div class="concept-term">Set Associative</div><div class="concept-def">k-way: memory blocks map to a set of k cache lines. Reduces conflicts vs direct mapped.</div></div>
+  <div class="concept-card"><div class="concept-term">Fully Associative</div><div class="concept-def">Any memory block can go into any cache line. Eliminates conflict misses but requires searching all lines.</div></div>
+  <div class="concept-card"><div class="concept-term">Cold Miss</div><div class="concept-def">First access to a block — compulsory miss. Cannot be avoided without prefetching.</div></div>
+  <div class="concept-card"><div class="concept-term">Capacity Miss</div><div class="concept-def">Cache is full; block evicted and re-accessed later. Reduce by increasing cache size.</div></div>
+  <div class="concept-card"><div class="concept-term">AMAT</div><div class="concept-def">Average Memory Access Time = Hit Time + Miss Rate × Miss Penalty. Key performance metric.</div></div>
+</div></div><div><h3 class="section-label">Complexity Comparison</h3><div class="table-wrap">
+<table><thead><tr><th>Policy</th><th>Access Time</th><th>Hardware Cost</th><th>Notes</th></tr></thead><tbody>
+  <tr><td>Direct Mapped</td><td>O(1)</td><td>Low</td><td>Simple, fast hardware</td></tr>
+  <tr><td>2-Way Set Assoc.</td><td>O(1)</td><td>Medium</td><td>Balance cost/performance</td></tr>
+  <tr><td>Fully Associative</td><td>O(n)</td><td>High</td><td>TLBs, small caches</td></tr>
+</tbody></table></div></div></div></div></section>
+<main class="simulator-main container">
+  <!-- Controls -->
+  <div class="controls-panel" style="margin-bottom:1.5rem">
+    <div style="display:flex;flex-wrap:wrap;gap:1rem;align-items:flex-end">
+      <div class="form-group">
+        <label class="form-label">Cache Lines</label>
+        <select id="cacheSizeSel" class="form-select" style="width:100px">
+          <option value="8">8</option>
+          <option value="16" selected>16</option>
+          <option value="32">32</option>
+          <option value="64">64</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Block Size</label>
+        <select id="blockSizeSel" class="form-select" style="width:100px">
+          <option value="2">2B</option>
+          <option value="4" selected>4B</option>
+          <option value="8">8B</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Associativity</label>
+        <select id="assocSel" class="form-select" style="width:140px">
+          <option value="Direct">Direct Mapped</option>
+          <option value="2-Way">2-Way Set Assoc.</option>
+          <option value="4-Way">4-Way Set Assoc.</option>
+          <option value="Full">Fully Associative</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Address (hex)</label>
+        <input id="addrInput" class="form-input form-mono" value="0x10" style="width:100px">
+      </div>
+      <button class="btn btn-primary" id="accessBtn">Access</button>
+      <button class="btn btn-ghost btn-sm" id="resetBtn">Reset</button>
+    </div>
+    <div style="margin-top:1rem">
+      <div class="section-label" style="margin-bottom:.5rem">Replacement Policy</div>
+      <div class="tabs" id="policyTabs" style="max-width:400px">
+        <button class="tab-btn active" data-policy="LRU">LRU</button>
+        <button class="tab-btn" data-policy="FIFO">FIFO</button>
+        <button class="tab-btn" data-policy="LFU">LFU</button>
+        <button class="tab-btn" data-policy="Random">Random</button>
+      </div>
+    </div>
+    <div style="margin-top:1rem">
+      <div class="section-label" style="margin-bottom:.5rem">Access Patterns</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.5rem">
+        <button class="btn btn-ghost btn-sm" data-pattern="sequential">Sequential</button>
+        <button class="btn btn-ghost btn-sm" data-pattern="stride2">Stride-2</button>
+        <button class="btn btn-ghost btn-sm" data-pattern="random">Random</button>
+        <button class="btn btn-ghost btn-sm" data-pattern="loop">Loop</button>
+        <button class="btn btn-ghost btn-sm" data-pattern="thrashing">Thrashing</button>
+      </div>
+    </div>
+    <div class="speed-control" style="margin-top:.75rem">
+      <label>Speed</label>
+      <input type="range" id="speedRange" min="1" max="5" value="3">
+      <span class="speed-label" id="speedLabel">3x</span>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-grid" style="margin-bottom:1.5rem">
+    <div class="stat-card"><div class="stat-value" id="hr">0%</div><div class="stat-label">Hit Rate</div></div>
+    <div class="stat-card"><div class="stat-value" id="mr">0%</div><div class="stat-label">Miss Rate</div></div>
+    <div class="stat-card"><div class="stat-value" id="ta">0</div><div class="stat-label">Total Accesses</div></div>
+    <div class="stat-card"><div class="stat-value" id="cm">0</div><div class="stat-label">Cold Misses</div></div>
+    <div class="stat-card"><div class="stat-value" id="capm">0</div><div class="stat-label">Capacity Misses</div></div>
+    <div class="stat-card"><div class="stat-value" id="confm">0</div><div class="stat-label">Conflict Misses</div></div>
+    <div class="stat-card"><div class="stat-value" id="amat">1.0</div><div class="stat-label">AMAT (cycles)</div></div>
+  </div>
+
+  <!-- Main viz -->
+  <div style="display:grid;grid-template-columns:1fr 340px;gap:1.5rem">
+    <div class="card">
+      <div class="section-label">Cache Grid (Sets × Ways)</div>
+      <div id="cacheGrid" style="overflow-x:auto"></div>
+    </div>
+    <div class="card">
+      <div class="section-label">Access Log</div>
+      <div id="accessLog" style="max-height:400px;overflow-y:auto;font-size:.8rem"></div>
+    </div>
+  </div>
+</main>
+<footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Cache Simulation</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+<div id="toast-container"></div><script src="../shared.js"></script><script src="./cache-simulation.js"></script></body></html>

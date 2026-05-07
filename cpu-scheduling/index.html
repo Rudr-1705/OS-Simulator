@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CPU Scheduling — OS Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="../shared.css"/>
+  <link rel="stylesheet" href="./cpu-scheduling.css"/>
+</head>
+<body>
+  <nav class="topnav">
+    <a href="../index.html" class="nav-back">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>
+      OS Simulator
+    </a>
+    <div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/></svg><span class="nav-module-name">CPU Scheduling</span></div>
+    <div class="nav-actions">
+      <button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button>
+      <button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button>
+    </div>
+  </nav>
+
+  <header class="module-header">
+    <div class="module-header-content">
+      <div class="module-header-meta"><span class="badge badge-purple">Process</span><span class="badge badge-gray">FCFS/SJF/RR</span></div>
+      <h1 class="module-title">CPU Scheduling</h1>
+      <p class="module-desc">Visualize FCFS, SJF, SRTF, Round Robin, and Priority scheduling with an interactive process table and animated Gantt chart.</p>
+    </div>
+    <div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><line x1="9" y1="4" x2="9" y2="20"/><line x1="15" y1="4" x2="15" y2="20"/><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/></svg></div>
+  </header>
+
+  <section class="theory-section" id="theoryContent" style="display:none">
+    <div class="container">
+      <div class="theory-grid">
+        <div class="theory-concepts">
+          <h3 class="section-label">Key Concepts</h3>
+          <div class="concepts-grid">
+            <div class="concept-card"><div class="concept-term">Turnaround Time</div><div class="concept-def">CT - AT, total time in system.</div></div>
+            <div class="concept-card"><div class="concept-term">Waiting Time</div><div class="concept-def">TAT - BT, total ready queue wait.</div></div>
+            <div class="concept-card"><div class="concept-term">Response Time</div><div class="concept-def">First run start - arrival time.</div></div>
+            <div class="concept-card"><div class="concept-term">Preemptive</div><div class="concept-def">Running process can be interrupted.</div></div>
+          </div>
+        </div>
+        <div class="theory-complexity">
+          <h3 class="section-label">Complexity Comparison</h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Algorithm</th><th>Time</th><th>Space</th><th>Best For</th></tr></thead>
+              <tbody>
+                <tr><td>FCFS</td><td>O(n log n)</td><td>O(n)</td><td>Simple queues</td></tr>
+                <tr><td>SJF/SRTF</td><td>O(n²)</td><td>O(n)</td><td>Low avg waiting</td></tr>
+                <tr><td>RR</td><td>O(total slices)</td><td>O(n)</td><td>Fair time sharing</td></tr>
+                <tr><td>Priority</td><td>O(n²)</td><td>O(n)</td><td>Critical tasks</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <main class="simulator-main container">
+    <div class="sim-grid">
+      <section class="controls-panel">
+        <h3 class="section-label">Algorithm & Input</h3>
+        <div class="tabs algo-tabs">
+          <button class="tab-btn active" data-algo="FCFS">FCFS</button>
+          <button class="tab-btn" data-algo="SJF">SJF</button>
+          <button class="tab-btn" data-algo="SRTF">SRTF</button>
+          <button class="tab-btn" data-algo="RR">RR</button>
+          <button class="tab-btn" data-algo="PRIORITY">Priority</button>
+        </div>
+        <div class="form-group quantum-wrap" id="quantumWrap" style="display:none;">
+          <label class="form-label" for="quantumInput">Quantum</label>
+          <input class="form-input form-mono" id="quantumInput" type="number" min="1" value="2"/>
+        </div>
+        <div class="table-wrap process-table">
+          <table>
+            <thead><tr><th>#</th><th>PID</th><th>Arrival</th><th>Burst</th><th title="Lower number = higher priority">Priority ↑</th><th>Action</th></tr></thead>
+            <tbody id="processRows"></tbody>
+          </table>
+        </div>
+        <div class="controls-row">
+          <button class="btn btn-secondary" id="addProcessBtn">+ Add Process</button>
+          <button class="btn btn-secondary" id="addRandomBtn">Add Random</button>
+        </div>
+        <div class="controls-row">
+          <button class="btn btn-primary" id="simulateBtn">Simulate</button>
+          <button class="btn btn-success" id="quickRunBtn">Quick Run</button>
+          <button class="btn btn-ghost" id="resetBtn">Reset</button>
+        </div>
+        <div class="speed-control">
+          <label for="speedRange">Speed</label>
+          <input id="speedRange" type="range" min="1" max="5" value="3"/>
+          <span class="speed-label" id="speedLabel">3x</span>
+        </div>
+      </section>
+
+      <section class="controls-panel">
+        <h3 class="section-label">Results</h3>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-value" id="avgTat">0</div><div class="stat-label">Avg TAT</div></div>
+          <div class="stat-card"><div class="stat-value" id="avgWt">0</div><div class="stat-label">Avg WT</div></div>
+          <div class="stat-card"><div class="stat-value" id="avgRt">0</div><div class="stat-label">Avg RT</div></div>
+          <div class="stat-card"><div class="stat-value" id="cpuUtil">0%</div><div class="stat-label">CPU Util</div></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>PID</th><th>AT</th><th>BT</th><th>CT</th><th>TAT</th><th>WT</th><th>RT</th></tr></thead>
+            <tbody id="resultsRows"><tr><td colspan="7">Add processes to simulate.</td></tr></tbody>
+          </table>
+        </div>
+        <button class="btn btn-secondary" id="compareAllBtn">Compare All</button>
+        <div class="compare-chart" id="compareChart"></div>
+      </section>
+    </div>
+
+    <section class="controls-panel">
+      <h3 class="section-label">Gantt Chart</h3>
+      <div class="gantt-wrap"><div class="gantt-chart" id="ganttChart"></div><div class="gantt-timeline" id="ganttTimeline"></div></div>
+      <div class="step-log card" id="stepLog">Simulation log will appear here.</div>
+    </section>
+  </main>
+
+  <footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">CPU Scheduling</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+
+  <div id="toast-container"></div>
+  <script src="../shared.js"></script>
+  <script src="./cpu-scheduling.js"></script>
+</body>
+</html>

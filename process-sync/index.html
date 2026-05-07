@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Process Synchronization — OS Simulator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet"/><link rel="stylesheet" href="../shared.css"/>
+  <link rel="stylesheet" href="./process-sync.css"/>
+</head>
+<body>
+  <nav class="topnav"><a href="../index.html" class="nav-back"><svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M10 3L5 8l5 5"/></svg>OS Simulator</a><div class="nav-center"><svg class="nav-module-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg><span class="nav-module-name">Process Synchronization</span></div><div class="nav-actions"><button class="theory-toggle-btn" onclick="toggleTheory()" id="theoryToggleBtn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg><span class="theory-toggle-label">Theory</span></button><button class="theme-btn" id="themeToggle" onclick="ThemeManager.toggle()" aria-label="Toggle theme"><svg id="themeIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></button></div></nav>
+  <header class="module-header"><div class="module-header-content"><div class="module-header-meta"><span class="badge badge-cyan">Process</span><span class="badge badge-gray">Semaphores</span></div><h1 class="module-title">Process Synchronization</h1><p class="module-desc">Visualize synchronization primitives through producer-consumer buffers and dining philosophers state transitions.</p></div><div class="module-header-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div></header>
+
+  <section class="theory-section" id="theoryContent" style="display:none">
+  <div class="container"><div class="theory-grid"><div><h3 class="section-label">Key Concepts</h3>
+  <div class="concepts-grid">
+    <div class="concept-card"><div class="concept-term">Race Condition</div><div class="concept-def">A situation where multiple processes access and manipulate shared data, and the outcome depends on the order of execution.</div></div>
+    <div class="concept-card"><div class="concept-term">Critical Section</div><div class="concept-def">A segment of code where shared resources are accessed. Only one process should be in its critical section at a time.</div></div>
+    <div class="concept-card"><div class="concept-term">Semaphore</div><div class="concept-def">An integer variable accessed through two standard atomic operations: wait() and signal(). Used for signaling among processes.</div></div>
+    <div class="concept-card"><div class="concept-term">Mutex Lock</div><div class="concept-def">A strict locking mechanism used to guarantee mutual exclusion to a shared resource.</div></div>
+    <div class="concept-card"><div class="concept-term">Deadlock</div><div class="concept-def">A situation where two or more processes are waiting indefinitely for an event that can only be caused by one of the waiting processes.</div></div>
+    <div class="concept-card"><div class="concept-term">Starvation</div><div class="concept-def">A situation where a process is perpetually denied the resources it needs to process its work.</div></div>
+  </div></div><div><h3 class="section-label">Classic Problems</h3><div class="table-wrap">
+  <table><thead><tr><th>Problem</th><th>Description</th><th>Key Challenge</th></tr></thead><tbody>
+    <tr><td>Producer-Consumer</td><td>Processes sharing a bounded buffer.</td><td>Sync buffer size limits.</td></tr>
+    <tr><td>Readers-Writers</td><td>Shared database access.</td><td>Allow multiple readers, but exclusive writers.</td></tr>
+    <tr><td>Dining Philosophers</td><td>Philosophers sharing chopsticks.</td><td>Avoid deadlock and starvation.</td></tr>
+  </tbody></table></div></div></div></div></section>
+
+  <main class="simulator-main container">
+    <section class="controls-panel">
+      <div class="tabs mode-tabs">
+        <button class="tab-btn active" data-tab="pc">Producer-Consumer</button>
+        <button class="tab-btn" data-tab="dp">Dining Philosophers</button>
+        <button class="tab-btn" data-tab="sem">Semaphore Visualizer</button>
+      </div>
+    </section>
+
+    <section class="controls-panel tab-content active" id="tab-pc">
+      <div class="controls-row">
+        <input class="form-input form-mono" id="bufSize" type="number" min="1" max="10" value="5" style="width:100px"/>
+        <button class="btn btn-primary" id="pcStart">Start</button><button class="btn btn-secondary" id="pcPause">Pause</button><button class="btn btn-ghost" id="pcReset">Reset</button>
+      </div>
+      <div class="speed-control"><label for="speedRange">Speed</label><input id="speedRange" type="range" min="1" max="5" value="3"/><span class="speed-label" id="speedLabel">3x</span></div>
+      <div class="pc-layout"><div class="box">Producer</div><div id="bufferSlots" class="buffer"></div><div class="box">Consumer</div></div>
+      <div class="sem-badges" style="display:flex;gap:1rem;margin-top:0.75rem;font-size:0.8rem;font-family:var(--font-mono)"><span>mutex: <span class="badge badge-purple">1</span></span><span>empty: <span class="badge badge-orange" id="semEmpty">5</span></span><span>full:  <span class="badge badge-green"  id="semFull">0</span></span></div><div id="pcLog" class="log card"></div>
+    </section>
+
+    <section class="controls-panel tab-content" id="tab-dp">
+      <div class="controls-row"><button class="btn btn-primary" id="dpStart">Start Simulation</button><button class="btn btn-secondary" id="dpPause">Pause</button><button class="btn btn-ghost" id="dpReset">Reset</button></div>
+      <svg id="dpSvg" viewBox="0 0 500 500"></svg>
+      <div id="dpDeadlock" class="badge badge-red" style="display:none;margin-top:8px;font-size:.85rem">
+        Deadlock Detected — All philosophers hungry, no forks available
+      </div>
+    </section>
+
+    <section class="controls-panel tab-content" id="tab-sem">
+      <div class="controls-row">
+        <input class="form-input" id="semName" placeholder="Semaphore name"/>
+        <input class="form-input form-mono" id="semVal" type="number" value="1" style="width:110px"/>
+        <button class="btn btn-secondary" id="addSem">Add Semaphore</button>
+      </div>
+      <div id="semList" class="sem-list"></div>
+    </section>
+  </main>
+  <footer class="module-footer"><div class="container footer-inner"><div class="footer-left"><a href="../index.html" class="wordmark" style="text-decoration:none"><span class="wm-os">OS</span><span class="wm-sim">Sim</span></a><span style="color:var(--border-default)">·</span><span style="font-size:.78rem;color:var(--text-muted)">Process Synchronization</span></div><nav class="footer-nav"><a href="../index.html">All Modules</a></nav></div></footer>
+  <div id="toast-container"></div><script src="../shared.js"></script><script src="./process-sync.js"></script>
+</body>
+</html>
