@@ -11,31 +11,36 @@ function parseInput() {
 }
 
 function buildSequence({ reqs, head, size, dir }) {
-  // Separate requests strictly less than head vs >= head
+
+  // Sort requests for easier left/right traversal
   const sorted = [...reqs].sort((a, b) => a - b);
-  const left  = sorted.filter(x => x < head);   // ascending order
-  const right = sorted.filter(x => x >= head);  // ascending order
+
+  // Requests on left and right of current head
+  const left = sorted.filter(x => x < head);
+  const right = sorted.filter(x => x >= head);
 
   const lastCyl = size - 1;
 
-  if (algo === "FCFS") {
-    return [head, ...reqs]; // serve in arrival order as-is
-  }
+  // FCFS: serve requests exactly in arrival order
+  if (algo === "FCFS") return [head, ...reqs];
 
+  // SSTF: repeatedly pick closest request
   if (algo === "SSTF") {
     const pending = [...reqs];
-    const seq = [head];
+    const seq = [head];//start with head
     let cur = head;
+
     while (pending.length) {
-      pending.sort((a, b) => Math.abs(a - cur) - Math.abs(b - cur));
-      cur = pending.shift();
+      pending.sort((a, b) => Math.abs(a - cur) - Math.abs(b - cur));// sorts in increasing cylinder distance from cur
+      cur = pending.shift();//removes first element from pending
       seq.push(cur);
     }
+
     return seq;
   }
 
+  // SCAN: sweep till disk end, then reverse
   if (algo === "SCAN") {
-    // Move in one direction to end (only if needed), then reverse and serve other side
     if (dir === "up") {
       if (!right.length) return [head, ...[...left].reverse()];
       return [head, ...right, lastCyl, ...[...left].reverse()];
@@ -45,38 +50,26 @@ function buildSequence({ reqs, head, size, dir }) {
     }
   }
 
+  // C-SCAN: move only in one direction
   if (algo === "CSCAN") {
-    // Move in one direction to end, jump to other end, continue same direction
-    if (dir === "up") {
-      // Serve right (ascending) → size-1 → jump to 0 → serve left (ascending)
-      return [head, ...right, lastCyl, 0, ...left];
-    } else {
-      // Serve left (descending) → 0 → jump to size-1 → serve right (descending)
-      return [head, ...[...left].reverse(), 0, lastCyl, ...[...right].reverse()];
-    }
+    if (dir === "up") return [head, ...right, lastCyl, 0, ...left];
+    else return [head, ...[...left].reverse(), 0, lastCyl, ...[...right].reverse()];
   }
 
+  // LOOK: reverse after final request instead of disk end
   if (algo === "LOOK") {
-    // Like SCAN but only goes to last request in that direction, not physical end
-    if (dir === "up") {
-      return [head, ...right, ...[...left].reverse()];
-    } else {
-      return [head, ...[...left].reverse(), ...right];
-    }
+    if (dir === "up") return [head, ...right, ...[...left].reverse()];
+    else return [head, ...[...left].reverse(), ...right];
   }
 
+  // C-LOOK: circular version of LOOK
   if (algo === "CLOOK") {
-    // Like C-SCAN but jumps to lowest/highest request, not physical end
-    if (dir === "up") {
-      return [head, ...right, ...left]; // jump from highest right to lowest left, serve ascending
-    } else {
-      return [head, ...[...left].reverse(), ...[...right].reverse()];
-    }
+    if (dir === "up") return [head, ...right, ...left];
+    else return [head, ...[...left].reverse(), ...[...right].reverse()];
   }
 
   return [head, ...reqs];
 }
-
 function calcStats(seq) {
   if (seq.length < 2) return { total: 0, avg: "0.00", max: 0, min: 0 };
   const jumps = [];
@@ -84,7 +77,23 @@ function calcStats(seq) {
   const total = jumps.reduce((a,b)=>a+b,0);
   return { total, avg:(total/jumps.length).toFixed(2), max:Math.max(...jumps), min:Math.min(...jumps) };
 }
+function calcDiskTimes(totalSeek, avgSeek) {
+  const rpm = parseFloat(document.getElementById("rpmInput").value) || 7200;
+  const seekPerTrack =
+    parseFloat(document.getElementById("seekPerTrackInput").value) || 0.1;
 
+
+  const rotationalLatency = (60 * 1000) / (2 * rpm);
+
+  const seekTime = totalSeek * seekPerTrack;
+
+  const accessTime = seekTime + rotationalLatency;
+
+  return {
+    rotationalLatency: rotationalLatency.toFixed(2),
+    accessTime: accessTime.toFixed(2),
+  };
+}
 function draw(seq, size, highlightIdx = seq.length - 1) {
   const cv = document.getElementById("seekCanvas");
   const ctx = cv.getContext("2d");
@@ -104,19 +113,40 @@ function draw(seq, size, highlightIdx = seq.length - 1) {
   ctx.fillStyle = "rgba(130,140,170,0.7)";
   ctx.font = "11px 'JetBrains Mono', monospace";
   ctx.textAlign = "right";
-  for (let g = 0; g <= 4; g++) { const cyl = Math.round((g / 4) * size); const y = padT + (g / 4) * plotH; ctx.fillText(cyl, padL - 6, y + 4); }
+ ctx.textAlign = "center";
+
+for (let g = 0; g <= 4; g++) {
+  const cyl = Math.round((g / 4) * (size - 1));
+  const x = padL + (g / 4) * plotW;
+
+  ctx.fillText(cyl, x, H - 8);
+
+  ctx.beginPath();
+  ctx.moveTo(x, padT);
+  ctx.lineTo(x, padT + plotH);
+  ctx.stroke();
+}
   if (seq.length < 2) return;
-  function cylY(c) { return padT + (c / size) * plotH; }
-  function stepX(i) { return padL + (i / (seq.length - 1)) * plotW; }
+  function cylX(c) {
+  return padL + (c / (size - 1)) * plotW;
+}
+
+function stepY(i) {
+  return padT + (i / (seq.length - 1)) * plotH;
+}
   ctx.strokeStyle = colors[algo] || "#4f6ef7";
   ctx.lineWidth = 2.5;
   ctx.lineJoin = "round";
   ctx.beginPath();
-  ctx.moveTo(stepX(0), cylY(seq[0]));
-  for (let i = 1; i < seq.length; i++) ctx.lineTo(stepX(i), cylY(seq[i]));
+ctx.moveTo(cylX(seq[0]), stepY(0));
+
+for (let i = 1; i < seq.length; i++) {
+  ctx.lineTo(cylX(seq[i]), stepY(i));
+}
   ctx.stroke();
   for (let i = 0; i < seq.length; i++) {
-    const x = stepX(i), y = cylY(seq[i]);
+    const x = cylX(seq[i]);
+const y = stepY(i);
     ctx.fillStyle = i === 0 ? "#ef4444" : (colors[algo] || "#4f6ef7");
     ctx.beginPath(); ctx.arc(x, y, i === 0 ? 6 : 3.5, 0, Math.PI * 2); ctx.fill();
     if (i === 0 || i === seq.length - 1 || seq.length <= 12) { ctx.fillStyle = "rgba(180,190,210,0.9)"; ctx.font = "10px 'JetBrains Mono', monospace"; ctx.textAlign = "center"; ctx.fillText(seq[i], x, y - 8); }
@@ -133,6 +163,19 @@ function renderAll() {
   draw(seq, p.size, 1);
   document.getElementById("sequenceTrail").innerHTML = seq.map((v) => `<span class="badge badge-blue">${v}</span>`).join(" ");
   const s = calcStats(seq);
+  const diskStats = calcDiskTimes(s.total, s.avg);
+
+animateCounter(
+  document.getElementById("rotLatency"),
+  Number(diskStats.rotationalLatency),
+  400
+);
+
+animateCounter(
+  document.getElementById("accessTime"),
+  Number(diskStats.accessTime),
+  400
+);
   animateCounter(document.getElementById("totalSeek"), s.total, 400);
   animateCounter(document.getElementById("avgSeek"), Number(s.avg), 400);
   animateCounter(document.getElementById("maxJump"), s.max, 400);
