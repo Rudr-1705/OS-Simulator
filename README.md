@@ -16,7 +16,7 @@ An interactive Operating System concepts simulator built with pure HTML, CSS, an
 |                |                                                                                         |
 | :------------- | :-------------------------------------------------------------------------------------- |
 | **URL**        | **https://rvbilimagga.github.io/OS-simulator-v2/**                                      |
-| **Quick link** | [**Click here to launch OS Simulator**](https://rvbilimagga.github.io/OS-simulator-v2/) |
+| **Quick link** | [**Click here to launch OS Simulator**](https://rudr-1705.github.io/OS-Simulator/) |
 
 No install or login required; works on phone and desktop.
 
