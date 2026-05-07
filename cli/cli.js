@@ -1,5 +1,297 @@
+let cwd='~',
+history=[],
+hidx=0;
 
-let cwd='~',history=[],hidx=0;const fs={'~':['docs','src','notes.txt'],'~/docs':['readme.md'],'~/src':['main.c']};
-function print(line,cls=''){const o=document.getElementById('out');o.innerHTML+=`<div class='${cls}'>${line}</div>`;o.scrollTop=o.scrollHeight;}
-function run(cmd){history.push(cmd);hidx=history.length;print(`<span style='color:#58a6ff'>user@os-sim</span>:<span style='color:#7ee787'>${cwd}$</span> <span style='color:#e3b341'>${cmd}</span>`);const [c,...a]=cmd.trim().split(/\s+/);if(!c)return; if(c==='help')print('ls cd pwd mkdir touch rm cat echo history clear date whoami uname man grep find'); else if(c==='pwd')print(cwd); else if(c==='ls')print((fs[cwd]||[]).join('  ')); else if(c==='cd'){const t=a[0]||'~';cwd=t==='..'?'~':(fs[t]?t:cwd);} else if(c==='echo')print(a.join(' ')); else if(c==='clear')document.getElementById('out').innerHTML=''; else if(c==='history')history.forEach((x,i)=>print(`${i+1} ${x}`)); else if(c==='date')print(new Date().toString()); else if(c==='whoami')print('user'); else if(c==='uname')print(a[0]==='-a'?'OS-Sim Kernel 1.0 x86_64':'OS-Sim'); else if(c==='man')print(`MANUAL: ${a[0]||''}`); else if(c==='grep')print('grep simulation done'); else if(c==='find')print('find simulation done'); else print(`${c}: command not found`,'err');}
-document.addEventListener('DOMContentLoaded',()=>{document.getElementById('runBtn').onclick=()=>{const i=document.getElementById('in');run(i.value);i.value='';};document.getElementById('in').addEventListener('keydown',e=>{if(e.key==='Enter'){document.getElementById('runBtn').click();}if(e.key==='ArrowUp'){hidx=Math.max(0,hidx-1);document.getElementById('in').value=history[hidx]||'';}if(e.key==='ArrowDown'){hidx=Math.min(history.length,hidx+1);document.getElementById('in').value=history[hidx]||'';}});});
+const fs={
+'~':['docs','src','notes.txt'],
+'~/docs':['readme.md'],
+'~/src':['main.c']
+};
+
+function print(line,cls=''){
+
+const o=document.getElementById('out');
+
+o.innerHTML+=`<div class='${cls}'>${line}</div>`;
+
+o.scrollTop=o.scrollHeight;
+
+}
+
+function run(cmd){
+
+history.push(cmd);
+
+hidx=history.length;
+
+print(`<span style='color:#58a6ff'>user@os-sim</span>:<span style='color:#7ee787'>${cwd}$</span> <span style='color:#e3b341'>${cmd}</span>`);
+
+const [c,...a]=cmd.trim().split(/\s+/);
+
+if(!c) return;
+
+if(c==='help'){
+
+print('ls cd pwd mkdir touch rm cat echo history clear date whoami uname man grep find');
+
+}
+
+else if(c==='pwd'){
+
+print(cwd);
+
+}
+
+else if(c==='ls'){
+
+print((fs[cwd]||[]).join('  '));
+
+}
+
+else if(c==='cd'){
+
+const t=a[0]||'~';
+
+if(t==='..'){
+
+cwd='~';
+
+}
+
+else if(fs[t]){
+
+cwd=t;
+
+}
+
+else{
+
+print('directory not found','err');
+
+}
+
+}
+
+else if(c==='mkdir'){
+
+const name=a[0];
+
+if(!name){
+
+print('mkdir: missing folder name','err');
+
+}
+
+else{
+
+fs[cwd]=fs[cwd]||[];
+
+if(!fs[cwd].includes(name)){
+
+fs[cwd].push(name);
+
+fs[`${cwd}/${name}`]=[];
+
+print(`directory '${name}' created`);
+
+}
+
+else{
+
+print('directory already exists','err');
+
+}
+
+}
+
+}
+
+else if(c==='touch'){
+
+const name=a[0];
+
+if(!name){
+
+print('touch: missing file name','err');
+
+}
+
+else{
+
+fs[cwd]=fs[cwd]||[];
+
+if(!fs[cwd].includes(name)){
+
+fs[cwd].push(name);
+
+print(`file '${name}' created`);
+
+}
+
+else{
+
+print('file already exists','err');
+
+}
+
+}
+
+}
+
+else if(c==='rm'){
+
+const name=a[0];
+
+if(!name){
+
+print('rm: missing file/folder name','err');
+
+}
+
+else{
+
+fs[cwd]=fs[cwd]||[];
+
+const idx=fs[cwd].indexOf(name);
+
+if(idx!==-1){
+
+fs[cwd].splice(idx,1);
+
+delete fs[`${cwd}/${name}`];
+
+print(`${name} removed`);
+
+}
+
+else{
+
+print('file/folder not found','err');
+
+}
+
+}
+
+}
+
+else if(c==='cat'){
+
+const name=a[0];
+
+if(!name){
+
+print('cat: missing file name','err');
+
+}
+
+else{
+
+print(`Displaying contents of ${name}`);
+
+}
+
+}
+
+else if(c==='echo'){
+
+print(a.join(' '));
+
+}
+
+else if(c==='clear'){
+
+document.getElementById('out').innerHTML='';
+
+}
+
+else if(c==='history'){
+
+history.forEach((x,i)=>print(`${i+1} ${x}`));
+
+}
+
+else if(c==='date'){
+
+print(new Date().toString());
+
+}
+
+else if(c==='whoami'){
+
+print('user');
+
+}
+
+else if(c==='uname'){
+
+print(a[0]==='-a'
+?'OS-Sim Kernel 1.0 x86_64'
+:'OS-Sim');
+
+}
+
+else if(c==='man'){
+
+print(`MANUAL: ${a[0]||''}`);
+
+}
+
+else if(c==='grep'){
+
+print('grep simulation done');
+
+}
+
+else if(c==='find'){
+
+print('find simulation done');
+
+}
+
+else{
+
+print(`${c}: command not found`,'err');
+
+}
+
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+
+document.getElementById('runBtn').onclick=()=>{
+
+const i=document.getElementById('in');
+
+run(i.value);
+
+i.value='';
+
+};
+
+document.getElementById('in').addEventListener('keydown',e=>{
+
+if(e.key==='Enter'){
+
+document.getElementById('runBtn').click();
+
+}
+
+if(e.key==='ArrowUp'){
+
+hidx=Math.max(0,hidx-1);
+
+document.getElementById('in').value=history[hidx]||'';
+
+}
+
+if(e.key==='ArrowDown'){
+
+hidx=Math.min(history.length,hidx+1);
+
+document.getElementById('in').value=history[hidx]||'';
+
+}
+
+});
+
+});

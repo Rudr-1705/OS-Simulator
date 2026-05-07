@@ -51,6 +51,8 @@
       <div style="display:flex;gap:.5rem;align-items:flex-end">
         <button class="btn btn-ghost btn-sm" id="randomBtn">Random Tasks</button>
         <button class="btn btn-ghost btn-sm" id="resetBtn">Reset</button>
+        <button class="btn btn-primary btn-sm" id="runBtn">▶ Run Animation</button>
+        <button class="btn btn-ghost btn-sm" id="stopBtn">■ Stop</button>
       </div>
       <div class="speed-control">
         <label>Speed</label>
@@ -85,7 +87,11 @@
     <!-- Gantt -->
     <div class="card">
       <div class="section-label" style="margin-bottom:.75rem">Schedule Timeline</div>
-      <div id="ganttWrap"></div>
+      <div id="ganttWrap">
+        <canvas id="ganttCanvas" style="width:100%;border-radius:var(--r-md);background:var(--bg-elevated)"></canvas>
+        <div id="ganttInfo" style="margin-top:.75rem;font-size:.8rem;font-family:var(--font-mono)"></div>
+      </div>
+      <div id="utilBar" style="margin-top:1rem"></div>
     </div>
   </div>
 </main>

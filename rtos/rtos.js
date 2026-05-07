@@ -6,7 +6,7 @@ let tasks  = [{ n:'T1', p:4,  c:1, d:4  },
                { n:'T3', p:20, c:5, d:20 }];
 let algo   = 'EDF';
 let speedVal = 3;
-let animTimer = null;
+let animRunning = false;
 
 function sched() {
   if (!tasks.length) return [];
@@ -27,8 +27,7 @@ function sched() {
     else if (algo === "RM")  pick = ready.sort((a, b) => a.period   - b.period)[0];
     else /* LLF */           pick = ready.sort((a, b) => (a.deadline - t - a.rem) - (b.deadline - t - b.rem))[0];
     pick.rem--;
-    // Detect deadline miss: any job whose deadline is now and still has work remaining
-    const missed = jobs.some(j => j.deadline === t && j.rem > 0 && j.release <= t);
+    const missed = jobs.some(j => j.deadline <= t && j.rem > 0 && j.release < j.deadline);
     arr.push({ t, run: pick.name, missed });
   }
   return arr;
@@ -61,62 +60,181 @@ function addTask() {
   tasks.push({ n, p, c, d });
   renderTaskTable();
   render();
+  renderUtilBar();
+}
+
+const TASK_COLORS = ["#60a5fa", "#f97316", "#22c55e", "#a855f7", "#ef4444", "#eab308", "#06b6d4"];
+function getTaskColor(idx) { return TASK_COLORS[idx % TASK_COLORS.length]; }
+
+function roundRectPath(ctx, x, y, w, h, r) {
+  if (typeof ctx.roundRect === "function") {
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    return;
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arcTo(x + w, y, x + w, y + r, r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+  ctx.lineTo(x + r, y + h);
+  ctx.arcTo(x, y + h, x, y + h - r, r);
+  ctx.lineTo(x, y + r);
+  ctx.arcTo(x, y, x + r, y, r);
+  ctx.closePath();
+}
+
+function drawGanttStatic(schedule, highlightTo = schedule.length) {
+  const canvas = document.getElementById("ganttCanvas");
+  if (!canvas) return;
+  const taskNames = [...new Set(schedule.map((x) => x.run))].filter((n) => n !== "IDLE");
+  if (!taskNames.length) return;
+
+  const ROW_H = 34;
+  const LABEL_W = 42;
+  const CELL_W = 18;
+  const PAD = 12;
+  const hp = schedule.length;
+  const cssW = LABEL_W + hp * CELL_W + PAD * 2;
+  const cssH = PAD * 2 + taskNames.length * (ROW_H + 4) + 22;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = Math.max(1, Math.floor(cssW * dpr));
+  canvas.height = Math.max(1, Math.floor(cssH * dpr));
+  canvas.style.width = `${cssW}px`;
+  canvas.style.height = `${cssH}px`;
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.scale(dpr, dpr);
+
+  const bg = getComputedStyle(document.documentElement).getPropertyValue("--bg-elevated").trim() || "#1e1e2e";
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, cssW, cssH);
+
+  taskNames.forEach((name, rowIdx) => {
+    const y = PAD + rowIdx * (ROW_H + 4);
+    const color = getTaskColor(rowIdx);
+    ctx.fillStyle = color;
+    ctx.font = "bold 12px JetBrains Mono, monospace";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    ctx.fillText(name, LABEL_W - 6, y + ROW_H / 2);
+
+    for (let t = 0; t < Math.min(hp, highlightTo); t++) {
+      const slot = schedule[t];
+      const active = slot.run === name;
+      const x = LABEL_W + PAD + t * CELL_W;
+      if (active) {
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.9;
+        roundRectPath(ctx, x, y, CELL_W - 2, ROW_H, 3);
+        ctx.fill();
+        ctx.globalAlpha = 1;
+        if (slot.missed) {
+          ctx.strokeStyle = "#ef4444";
+          ctx.lineWidth = 2;
+          roundRectPath(ctx, x, y, CELL_W - 2, ROW_H, 3);
+          ctx.stroke();
+        }
+      } else {
+        ctx.fillStyle = "#ffffff08";
+        roundRectPath(ctx, x, y, CELL_W - 2, ROW_H, 3);
+        ctx.fill();
+      }
+    }
+  });
+
+  const axisY = PAD + taskNames.length * (ROW_H + 4) + 6;
+  ctx.fillStyle = "#64748b";
+  ctx.font = "9px JetBrains Mono, monospace";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "top";
+  for (let t = 0; t <= Math.min(hp, highlightTo); t += 5) {
+    const x = LABEL_W + PAD + t * CELL_W;
+    ctx.fillText(t, x, axisY);
+  }
+
+  if (highlightTo < hp) {
+    const px = LABEL_W + PAD + highlightTo * CELL_W;
+    ctx.strokeStyle = "#f97316";
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 3]);
+    ctx.beginPath();
+    ctx.moveTo(px, PAD - 4);
+    ctx.lineTo(px, axisY);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+async function runAnimation() {
+  if (animRunning) return;
+  if (!tasks.length) {
+    const info = document.getElementById("ganttInfo");
+    if (info) info.innerHTML = "<span style='color:var(--text-muted)'>Add at least one task to simulate.</span>";
+    return;
+  }
+  animRunning = true;
+  const s = sched();
+  if (!s.length) { animRunning = false; return; }
+
+  for (let t = 1; t <= s.length && animRunning; t++) {
+    drawGanttStatic(s, t);
+    await sleep(getDelay(speedVal));
+  }
+
+  drawGanttStatic(s, s.length);
+  const misses = s.filter((x) => x.missed).length;
+  let info = `<span style="color:var(--text-muted)">Hyperperiod = ${s.length} time units</span>`;
+  if (misses) info += ` &nbsp;|&nbsp; <span style="color:#ef4444">⚠ ${misses} deadline miss${misses > 1 ? "es" : ""}</span>`;
+  if (algo === "RM") {
+    const util = tasks.reduce((a, t) => a + t.c / t.p, 0);
+    const bound = tasks.length * (Math.pow(2, 1 / tasks.length) - 1);
+    info += `<br>RM: U=${util.toFixed(3)} ${util <= bound ? "≤" : ">"} bound=${bound.toFixed(3)} <span class="${util <= bound ? "badge-green" : "badge-red"}" style="font-size:.75rem">${util <= bound ? "SCHEDULABLE" : "MAY FAIL"}</span>`;
+  }
+  const infoEl = document.getElementById("ganttInfo");
+  if (infoEl) infoEl.innerHTML = info;
+  animRunning = false;
+}
+
+function renderUtilBar() {
+  const el = document.getElementById("utilBar");
+  if (!el || !tasks.length) return;
+  const total = tasks.reduce((a, t) => a + t.c / t.p, 0);
+  const pct = Math.min(100, total * 100);
+  const color = pct > 100 ? "#ef4444" : pct > 70 ? "#f97316" : "#22c55e";
+  el.innerHTML = `
+    <div style="font-size:.78rem;font-family:var(--font-mono);color:var(--text-muted);margin-bottom:4px">
+      CPU Utilization: <strong style="color:${color}">${pct.toFixed(1)}%</strong>
+      ${pct > 100 ? '<span style="color:#ef4444"> - OVERLOADED</span>' : ""}
+    </div>
+    <div style="height:8px;background:var(--bg-elevated);border-radius:99px;overflow:hidden">
+      <div style="width:${pct}%;height:100%;background:${color};border-radius:99px;transition:width .4s ease"></div>
+    </div>
+    <div style="display:flex;gap:1rem;margin-top:.5rem;flex-wrap:wrap">
+      ${tasks.map((t, i) => `<span style="font-size:.72rem;font-family:var(--font-mono)"><span style="color:${getTaskColor(i)}">■</span> ${t.n}: ${((t.c / t.p) * 100).toFixed(1)}%</span>`).join("")}
+    </div>`;
 }
 
 function render() {
+  if (!tasks.length) {
+    const info = document.getElementById("ganttInfo");
+    if (info) info.innerHTML = "<span style='color:var(--text-muted)'>Add at least one task to simulate.</span>";
+    const canvas = document.getElementById("ganttCanvas");
+    if (canvas) {
+      const ctx = canvas.getContext("2d");
+      canvas.width = 1;
+      canvas.height = 1;
+      ctx.clearRect(0, 0, 1, 1);
+    }
+    return;
+  }
   const s = sched();
-  const wrap = document.getElementById("ganttWrap");
-  if (!wrap) return;
-  if (!s.length) { wrap.innerHTML = "<p style='color:var(--text-muted)'>Add tasks to simulate.</p>"; return; }
-
-  const taskNames = [...new Set(s.map(x => x.run))].filter(n => n !== "IDLE");
-  const hp  = s.length;
-  let html  = `<div style="overflow-x:auto;padding-bottom:8px">`;
-  html += `<div style="font-family:var(--font-mono);font-size:.72rem;color:var(--text-muted);margin-bottom:8px">
-    Hyperperiod = ${hp} time units</div>`;
-
-  taskNames.forEach((name, idx) => {
-    const bg = processColor(idx, 0.9);
-    html += `<div style="display:flex;align-items:center;margin-bottom:5px">
-      <div style="width:36px;font-size:.78rem;font-weight:700;color:var(--text-primary);flex-shrink:0;font-family:var(--font-mono)">${name}</div>
-      <div style="display:flex">`;
-    s.forEach(slot => {
-      const active  = slot.run === name;
-      const cellBg  = active ? bg : "var(--bg-sunken)";
-      const border  = slot.missed ? "2px solid var(--accent-red)" : "1px solid var(--border-subtle)";
-      html += `<div style="width:22px;height:26px;background:${cellBg};border:${border};border-radius:2px;margin-right:1px;${active?'':'opacity:.3'}" title="t=${slot.t}: ${slot.run}${slot.missed?' (DEADLINE MISS!)':''}"></div>`;
-    });
-    html += `</div></div>`;
-  });
-
-  // Time axis
-  html += `<div style="display:flex;margin-left:36px;margin-top:4px">`;
-  s.forEach((_, t) => {
-    html += t % 5 === 0
-      ? `<div style="width:22px;margin-right:1px;font-size:.62rem;color:var(--text-muted);font-family:var(--font-mono)">${t}</div>`
-      : `<div style="width:22px;margin-right:1px"></div>`;
-  });
-  html += `</div>`;
-
-  // Deadline markers legend
-  const misses = s.filter(x => x.missed).length;
-  if (misses) {
-    html += `<div class="badge badge-red" style="margin-top:8px">${misses} deadline miss${misses>1?'es':''} detected</div>`;
-  }
-  html += `</div>`;
-
-  // RM Schedulability test
-  if (algo === "RM") {
-    const util  = tasks.reduce((a, t) => a + t.c / t.p, 0);
-    const bound = tasks.length * (Math.pow(2, 1 / tasks.length) - 1);
-    html += `<div style="margin-top:1rem;padding:.75rem;background:var(--bg-elevated);border-radius:var(--r-md);font-family:var(--font-mono);font-size:.82rem">
-      <strong>RM Schedulability Test</strong><br>
-      U = Σ(Cᵢ/Tᵢ) = ${util.toFixed(4)} &nbsp;${util <= bound ? '≤' : '>'}&nbsp; n(2^(1/n)−1) = ${bound.toFixed(4)}
-      <span class="badge ${util <= bound ? 'badge-green' : 'badge-red'}" style="margin-left:.5rem">${util <= bound ? 'SCHEDULABLE' : 'POSSIBLY NOT SCHEDULABLE'}</span>
-    </div>`;
-  }
-
-  wrap.innerHTML = html;
+  if (!s.length) return;
+  drawGanttStatic(s, s.length);
+  const info = document.getElementById("ganttInfo");
+  if (info) info.innerHTML = `<span style="color:var(--text-muted)">Hyperperiod = ${s.length} time units · Algorithm: ${algo}</span>`;
+  renderUtilBar();
 }
 
 function randomTasks() {
@@ -149,6 +267,8 @@ document.addEventListener("DOMContentLoaded", () => {
     speedVal = parseInt(e.target.value, 10);
     document.getElementById("speedLabel").textContent = `${speedVal}x`;
   });
+  document.getElementById("runBtn")?.addEventListener("click", runAnimation);
+  document.getElementById("stopBtn")?.addEventListener("click", () => { animRunning = false; });
   renderTaskTable();
   render();
 });
