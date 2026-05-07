@@ -144,7 +144,7 @@ tbody tr:hover{background:var(--bg-elevated)}
   border-color: var(--accent-orange);
 }
 .raid-status-bar.rebuilding {
-  background: rgba(234, 179, 8, 0.15); /* Yellow */
+  background: rgba(234, 179, 8, 0.15);
   color: #ca8a04;
   border-color: #ca8a04;
 }
@@ -174,7 +174,7 @@ tbody tr:hover{background:var(--bg-elevated)}
   transition: all var(--t-normal);
   box-shadow: var(--shadow-sm);
   position: relative;
-  justify-content: flex-end; /* blocks stack from bottom */
+  justify-content: flex-end;
 }
 
 .disk-header {
@@ -184,7 +184,7 @@ tbody tr:hover{background:var(--bg-elevated)}
   right: 0;
   padding: 8px 0;
   font-family: var(--font-mono);
-  font-size: 0.85rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-secondary);
   text-align: center;
@@ -193,14 +193,20 @@ tbody tr:hover{background:var(--bg-elevated)}
   border-top-left-radius: var(--r-sm);
   border-top-right-radius: var(--r-sm);
   z-index: 2;
+  line-height: 1.2;
+}
+
+/* ECC/Hamming disk header styling */
+.disk.ecc-disk .disk-header {
+  color: var(--accent-orange);
 }
 
 .disk-blocks {
   display: flex;
-  flex-direction: column-reverse; /* stack from bottom up */
+  flex-direction: column-reverse;
   gap: 4px;
   width: 100%;
-  margin-top: 36px; /* space for header */
+  margin-top: 40px; /* slightly more space for 2-line headers */
   flex-grow: 1;
   justify-content: flex-start;
 }
@@ -233,7 +239,7 @@ tbody tr:hover{background:var(--bg-elevated)}
   align-items: center;
   justify-content: center;
   font-family: var(--font-mono);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: bold;
   color: white;
   transition: all var(--t-fast);
@@ -339,7 +345,7 @@ tbody tr:hover{background:var(--bg-elevated)}
           <div class="concepts-grid">
             <div class="concept-card"><div class="concept-term">RAID 0 (Striping)</div><div class="concept-def">Distributes data across disks for high performance but no redundancy.</div></div>
             <div class="concept-card"><div class="concept-term">RAID 1 (Mirroring)</div><div class="concept-def">Duplicates data across disks for high redundancy.</div></div>
-            <div class="concept-card"><div class="concept-term">RAID 2 (Bit-level ECC)</div><div class="concept-def">Bit-level striping with ECC disks for correction.</div></div>
+            <div class="concept-card"><div class="concept-term">RAID 2 (Bit-level ECC)</div><div class="concept-def">Bit-level striping across data disks. Dedicated Hamming ECC disks at power-of-2 positions hold error-correcting codes. Can recover any single-disk failure.</div></div>
             <div class="concept-card"><div class="concept-term">RAID 3 (Byte-level Parity)</div><div class="concept-def">Byte-level striping with one dedicated parity disk.</div></div>
           </div>
         </div>
@@ -351,10 +357,16 @@ tbody tr:hover{background:var(--bg-elevated)}
               <tbody>
                 <tr><td>RAID 0</td><td>Excellent</td><td>None</td><td>2</td><td>0 (Catastrophic)</td></tr>
                 <tr><td>RAID 1</td><td>Good Read, Normal Write</td><td>High</td><td>2</td><td>1 drive</td></tr>
-                <tr><td>RAID 2</td><td>Sequential only</td><td>High (ECC)</td><td>3+</td><td>1 drive (ECC)</td></tr>
+                <tr><td>RAID 2</td><td>Sequential only</td><td>High (ECC)</td><td>3</td><td>1 drive (Hamming ECC)</td></tr>
                 <tr><td>RAID 3</td><td>High Sequential</td><td>Medium</td><td>3</td><td>1 drive</td></tr>
               </tbody>
             </table>
+          </div>
+          <div class="concept-card" style="margin-top:12px">
+            <div class="concept-term">RAID 2: Hamming ECC Disk Layout</div>
+            <div class="concept-def">
+              ECC disks occupy positions that are powers of 2 (positions 1, 2, 4, 8 …). For <em>d</em> total disks, the number of ECC disks <em>p</em> satisfies <em>2<sup>p</sup> ≥ d + 1</em>. The remaining disks hold data, striped at the bit level across every stripe.
+            </div>
           </div>
         </div>
       </div>
@@ -379,6 +391,7 @@ tbody tr:hover{background:var(--bg-elevated)}
         <label style="font-size:.85rem;font-weight:600">Disk Size:
           <input class="form-input form-mono" id="diskSize" type="number" value="100" min="10" max="1000" style="width:80px;display:inline-block;margin-left:8px"/>
         </label>
+        <div id="raid2Info" style="display:none;font-size:.8rem;color:var(--text-muted);font-family:var(--font-mono);background:var(--bg-sunken);padding:.4rem .8rem;border-radius:var(--r-sm);border:1px solid var(--border-subtle)"></div>
         <div class="speed-control" style="margin-left:auto">
           <label for="speedRange">Speed</label>
           <input id="speedRange" type="range" min="1" max="5" value="3"/>
@@ -401,7 +414,7 @@ tbody tr:hover{background:var(--bg-elevated)}
       <div class="legend-row">
         <span class="legend-item"><span class="legend-box data"></span> Data</span>
         <span class="legend-item"><span class="legend-box mirror"></span> Mirror</span>
-        <span class="legend-item"><span class="legend-box parity"></span> Parity</span>
+        <span class="legend-item"><span class="legend-box parity"></span> ECC / Parity</span>
         <span class="legend-item"><span class="legend-box failed"></span> Failed</span>
         <span class="legend-item"><span class="legend-box rebuilding"></span> Rebuilding</span>
       </div>
@@ -454,17 +467,16 @@ const ThemeManager = {
 document.addEventListener('DOMContentLoaded', () => ThemeManager.init());
 
 function toggleTheory(){const panel=document.getElementById('theoryContent');const btn=document.getElementById('theoryToggleBtn');if(!panel)return;const open=panel.style.display!=='none';panel.style.display=open?'none':'block';if(btn){const lab=btn.querySelector('.theory-toggle-label');if(lab)lab.textContent=open?'Theory':'Hide';else btn.textContent=open?'Show Theory':'Hide Theory'}}
-
   </script>
   <script>
 document.addEventListener("DOMContentLoaded", () => {
-  // DOM Elements
   const raidTabs = document.querySelectorAll("#raidTabs .tab-btn");
   const numDisksInput = document.getElementById("numDisks");
   const numBlocksInput = document.getElementById("numBlocks");
   const diskSizeInput = document.getElementById("diskSize");
   const speedRange = document.getElementById("speedRange");
   const speedLabel = document.getElementById("speedLabel");
+  const raid2Info = document.getElementById("raid2Info");
 
   const startBtn = document.getElementById("startBtn");
   const pauseBtn = document.getElementById("pauseBtn");
@@ -481,18 +493,41 @@ document.addEventListener("DOMContentLoaded", () => {
   const statEfficiency = document.getElementById("statEfficiency");
   const statStatus = document.getElementById("statStatus");
 
-  // State
-  let currentRaid = parseInt(
-    document.querySelector("#raidTabs .tab-btn.active")?.dataset.r || "0",
-    10,
-  ); // 0, 1, 2, 3, 4, 5, 6, 10
-  let disks = []; // { status: 'healthy' | 'failed' | 'rebuilding', dom: HTMLElement, blocksDom: HTMLElement }
+  let currentRaid = 0;
+  let disks = [];
   let layoutSteps = [];
   let currentStepIdx = 0;
   let isAnimating = false;
   let animTimer = null;
 
-  // Config validation on change
+  // ── RAID 2 helpers ──────────────────────────────────────────────────────────
+  // Returns the number of Hamming ECC disks needed for `d` total disks.
+  // Formula: smallest p such that 2^p >= d + 1
+  function raid2ParityCount(d) {
+    let p = 1;
+    while (Math.pow(2, p) < d + 1) p++;
+    return p;
+  }
+
+  // Returns a set of disk indices (0-based) that are ECC disks in RAID 2.
+  // Hamming positions are powers of 2 (1-based: 1, 2, 4, 8 …) → 0-based: 0, 1, 3, 7 …
+  function raid2EccIndices(d) {
+    const ecc = new Set();
+    for (let pos = 1; pos <= d; pos++) {
+      if ((pos & (pos - 1)) === 0) { // pos is power of 2
+        ecc.add(pos - 1); // convert to 0-based index
+      }
+    }
+    return ecc;
+  }
+
+  // Returns the label for a Hamming ECC disk at 0-based index i
+  // e.g. index 0 → "H1", index 1 → "H2", index 3 → "H4"
+  function raid2EccLabel(diskIdx) {
+    return "H" + (diskIdx + 1);
+  }
+  // ────────────────────────────────────────────────────────────────────────────
+
   raidTabs.forEach((tab) => {
     tab.addEventListener("click", (e) => {
       raidTabs.forEach((t) => t.classList.remove("active"));
@@ -509,12 +544,8 @@ document.addEventListener("DOMContentLoaded", () => {
     updateMetrics();
     resetSimulation();
   });
-  numBlocksInput.addEventListener("change", () => {
-    resetSimulation();
-  });
-  diskSizeInput.addEventListener("change", () => {
-    updateMetrics();
-  });
+  numBlocksInput.addEventListener("change", () => { resetSimulation(); });
+  diskSizeInput.addEventListener("change", () => { updateMetrics(); });
   speedRange.addEventListener("input", (e) => {
     speedLabel.textContent = e.target.value + "x";
   });
@@ -528,62 +559,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function validateConfig() {
     let d = parseInt(numDisksInput.value);
+
     if (currentRaid === 1) d = 2;
-    if (currentRaid === 2) d = Math.max(3, d);
+    if (currentRaid === 2) d = Math.max(3, d); // min 3 disks for RAID 2
     if (currentRaid === 3) d = Math.max(3, d);
-    if (currentRaid === 4) d = Math.max(3, d);
-    if (currentRaid === 5 && d < 3) d = Math.max(3, d);
-    if (currentRaid === 6) d = Math.max(4, d);
-    if (currentRaid === 10) {
-      d = Math.max(4, d);
-      if (d % 2 !== 0) d -= 1;
-    }
+
     numDisksInput.value = d;
   }
 
   function updateMetrics() {
     let d = parseInt(numDisksInput.value);
     let s = parseInt(diskSizeInput.value);
-
-    let usable = 0,
-      tol = "",
-      eff = 0;
+    let usable = 0, tol = "", eff = 0;
 
     if (currentRaid === 0) {
-      usable = d * s;
-      tol = "0 (None)";
-      eff = 100;
+      usable = d * s; tol = "0 (None)"; eff = 100;
     } else if (currentRaid === 1) {
-      usable = s;
-      tol = "1 Drive";
-      eff = 50;
+      usable = s; tol = "1 Drive"; eff = 50;
     } else if (currentRaid === 2) {
-      const parityDisks = Math.max(1, Math.ceil(Math.log2(d + 1)));
-      const dataDisks = Math.max(1, d - parityDisks);
-      usable = dataDisks * s;
-      tol = "1 Drive (ECC)";
-      eff = Math.round((dataDisks / d) * 100);
+      // Correct RAID 2: p ECC disks, rest are data
+      const p = raid2ParityCount(d);
+      const dataDisks = d - p;
+      usable = Math.max(0, dataDisks) * s;
+      tol = "1 Drive (Hamming ECC)";
+      eff = dataDisks > 0 ? Math.round((dataDisks / d) * 100) : 0;
+
+      // Show breakdown info
+      raid2Info.style.display = "inline-flex";
+      raid2Info.textContent = `${dataDisks} data disk${dataDisks !== 1 ? 's' : ''} + ${p} ECC (Hamming) disk${p !== 1 ? 's' : ''}`;
     } else if (currentRaid === 3) {
-      usable = (d - 1) * s;
-      tol = "1 Drive";
-      eff = Math.round(((d - 1) / d) * 100);
-    } else if (currentRaid === 4) {
-      usable = (d - 1) * s;
-      tol = "1 Drive";
-      eff = Math.round(((d - 1) / d) * 100);
-    } else if (currentRaid === 5) {
-      usable = (d - 1) * s;
-      tol = "1 Drive";
-      eff = Math.round(((d - 1) / d) * 100);
-    } else if (currentRaid === 6) {
-      usable = (d - 2) * s;
-      tol = "2 Drives";
-      eff = Math.round(((d - 2) / d) * 100);
-    } else if (currentRaid === 10) {
-      usable = (d / 2) * s;
-      tol = "1 per pair";
-      eff = 50;
+      usable = (d - 1) * s; tol = "1 Drive"; eff = Math.round(((d - 1) / d) * 100);
     }
+
+    if (currentRaid !== 2) raid2Info.style.display = "none";
 
     statUsable.textContent = usable + " GB";
     statTolerance.textContent = tol;
@@ -599,12 +607,27 @@ document.addEventListener("DOMContentLoaded", () => {
     raidArrayContainer.innerHTML = "";
     disks = [];
 
+    // For RAID 2, identify which disk indices are ECC (Hamming) disks
+    const eccIndices = currentRaid === 2 ? raid2EccIndices(d) : new Set();
+
     for (let i = 0; i < d; i++) {
       let diskDiv = document.createElement("div");
       diskDiv.className = "disk";
+
+      let diskLabel = "Disk " + i;
+      if (currentRaid === 2) {
+        if (eccIndices.has(i)) {
+          diskDiv.classList.add("ecc-disk");
+          diskLabel = "ECC H" + (i + 1); // e.g. ECC H1, ECC H2, ECC H4
+        } else {
+          diskLabel = "Data " + i;
+        }
+      }
+
       let header = document.createElement("div");
       header.className = "disk-header";
-      header.textContent = "Disk " + i;
+      header.textContent = diskLabel;
+
       let blocksCont = document.createElement("div");
       blocksCont.className = "disk-blocks";
 
@@ -614,6 +637,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       disks.push({
         status: "healthy",
+        isEcc: eccIndices.has(i),
         dom: diskDiv,
         blocksDom: blocksCont,
       });
@@ -627,155 +651,113 @@ document.addEventListener("DOMContentLoaded", () => {
     layoutSteps = [];
     let d = parseInt(numDisksInput.value);
     let b = parseInt(numBlocksInput.value);
-
     let dataLabels = Array.from(
       { length: b },
-      (_, i) => String.fromCharCode(65 + Math.floor(i / 10)) + (i % 10),
-    ); // A0, A1...
+      (_, i) => String.fromCharCode(65 + Math.floor(i / 10)) + (i % 10)
+    );
 
     if (currentRaid === 0) {
+      // ── RAID 0: round-robin stripe across all disks ─────────────────────────
       for (let i = 0; i < b; i++) {
         let diskIdx = i % d;
-        layoutSteps.push([
-          { disk: diskIdx, type: "data", label: dataLabels[i] },
-        ]);
+        layoutSteps.push([{ disk: diskIdx, type: "data", label: dataLabels[i] }]);
       }
+
     } else if (currentRaid === 1) {
+      // ── RAID 1: mirror every block on both disks ────────────────────────────
       for (let i = 0; i < b; i++) {
         layoutSteps.push([
-          { disk: 0, type: "data", label: dataLabels[i] },
+          { disk: 0, type: "data",   label: dataLabels[i] },
           { disk: 1, type: "mirror", label: dataLabels[i] },
         ]);
       }
+
     } else if (currentRaid === 2) {
-      const parityCount = Math.max(1, Math.ceil(Math.log2(d + 1)));
-      const dataCount = Math.max(1, d - parityCount);
+      // ── RAID 2: Hamming ECC ─────────────────────────────────────────────────
+      //
+      // Disk layout (0-based indices):
+      //   Positions that are (power-of-2 − 1): 0, 1, 3, 7 → ECC (Hamming) disks
+      //   All other positions: data disks
+      //
+      // Each stripe:
+      //   • All data disks receive one data block from the current stripe
+      //   • All ECC disks receive the corresponding Hamming check block
+      //   • Data and ECC blocks are written simultaneously (one step)
+      //
+      // We keep emitting stripes until all `b` data blocks have been placed.
+      // ECC blocks are always emitted together with their stripe's data blocks.
+      // ────────────────────────────────────────────────────────────────────────
+
+      const eccSet = raid2EccIndices(d);
+
+      // Ordered list of data disk indices
+      const dataDiskIndices = [];
+      for (let i = 0; i < d; i++) {
+        if (!eccSet.has(i)) dataDiskIndices.push(i);
+      }
+
+      const dataCount = dataDiskIndices.length;
+
+      if (dataCount === 0) {
+        // Edge case: all disks are ECC (not useful, but don't crash)
+        showToast("Not enough disks for RAID 2 data. Add more disks.", "error");
+        return;
+      }
+
       let dataWritten = 0;
       let stripeIdx = 0;
 
       while (dataWritten < b) {
         let actions = [];
-        for (let i = 0; i < dataCount && dataWritten < b; i++) {
-          actions.push({
-            disk: i,
-            type: "data",
-            label: dataLabels[dataWritten],
-          });
-          dataWritten++;
-        }
-        for (let i = dataCount; i < d; i++) {
-          actions.push({ disk: i, type: "parity", label: "ECC" + stripeIdx });
-        }
-        layoutSteps.push(actions);
-        stripeIdx++;
-      }
-    } else if (currentRaid === 3) {
-      const parityDisk = d - 1;
-      let dataWritten = 0;
-      let stripeIdx = 0;
-      while (dataWritten < b) {
-        let actions = [];
-        for (let i = 0; i < parityDisk && dataWritten < b; i++) {
-          actions.push({
-            disk: i,
-            type: "data",
-            label: dataLabels[dataWritten],
-          });
-          dataWritten++;
-        }
-        actions.push({
-          disk: parityDisk,
-          type: "parity",
-          label: "P" + stripeIdx,
-        });
-        layoutSteps.push(actions);
-        stripeIdx++;
-      }
-    } else if (currentRaid === 4) {
-      const parityDisk = d - 1;
-      let dataWritten = 0;
-      let stripeIdx = 0;
-      while (dataWritten < b) {
-        let actions = [];
-        for (let i = 0; i < parityDisk && dataWritten < b; i++) {
-          actions.push({
-            disk: i,
-            type: "data",
-            label: dataLabels[dataWritten],
-          });
-          dataWritten++;
-        }
-        actions.push({
-          disk: parityDisk,
-          type: "parity",
-          label: "P" + stripeIdx,
-        });
-        layoutSteps.push(actions);
-        stripeIdx++;
-      }
-    } else if (currentRaid === 5) {
-      let pIdx = d - 1;
-      let dataWritten = 0;
-      let stripeIdx = 0;
 
-      while (dataWritten < b) {
-        let actions = [];
-        for (let i = 0; i < d; i++) {
-          if (i === pIdx) {
-            actions.push({ disk: i, type: "parity", label: "P" + stripeIdx });
-          } else {
-            if (dataWritten < b) {
-              actions.push({
-                disk: i,
-                type: "data",
-                label: dataLabels[dataWritten],
-              });
-              dataWritten++;
-            }
+        // Write data blocks for this stripe (up to dataCount, capped by remaining b)
+        for (let i = 0; i < dataCount; i++) {
+          if (dataWritten >= b) {
+            // Stripe is partially filled — pad remaining data slots visually as empty
+            // (In real RAID 2 all data disks participate every stripe, but for the
+            //  simulator we just stop here for clarity.)
+            break;
           }
+          actions.push({
+            disk: dataDiskIndices[i],
+            type: "data",
+            label: dataLabels[dataWritten],
+          });
+          dataWritten++;
         }
-        layoutSteps.push(actions);
-        pIdx = (pIdx - 1 + d) % d;
-        stripeIdx++;
-      }
-    } else if (currentRaid === 6) {
-      let pIdx = d - 2;
-      let qIdx = d - 1;
-      let dataWritten = 0;
-      let stripeIdx = 0;
 
-      while (dataWritten < b) {
-        let actions = [];
-        for (let i = 0; i < d; i++) {
-          if (i === pIdx) {
-            actions.push({ disk: i, type: "parity", label: "P" + stripeIdx });
-          } else if (i === qIdx) {
-            actions.push({ disk: i, type: "parity", label: "Q" + stripeIdx });
-          } else if (dataWritten < b) {
+        // Only emit a stripe step if at least one data block was placed
+        if (actions.length > 0) {
+          // Append ECC blocks for every Hamming disk in this stripe
+          eccSet.forEach((eccDiskIdx) => {
             actions.push({
-              disk: i,
-              type: "data",
-              label: dataLabels[dataWritten],
+              disk: eccDiskIdx,
+              type: "parity",
+              label: raid2EccLabel(eccDiskIdx) + "." + stripeIdx, // e.g. H1.0, H2.0, H4.0
             });
-            dataWritten++;
-          }
+          });
+
+          layoutSteps.push(actions);
         }
-        layoutSteps.push(actions);
-        pIdx = (pIdx - 1 + d) % d;
-        qIdx = (qIdx - 1 + d) % d;
-        if (pIdx === qIdx) pIdx = (pIdx - 1 + d) % d;
+
         stripeIdx++;
       }
-    } else if (currentRaid === 10) {
-      let pairs = d / 2;
-      for (let i = 0; i < b; i++) {
-        let pairIdx = i % pairs;
-        let d1 = pairIdx * 2;
-        let d2 = d1 + 1;
-        layoutSteps.push([
-          { disk: d1, type: "data", label: dataLabels[i] },
-          { disk: d2, type: "mirror", label: dataLabels[i] },
-        ]);
+
+    } else if (currentRaid === 3) {
+      // ── RAID 3: dedicated parity disk at last position ──────────────────────
+      const parityDisk = d - 1;
+      let dataWritten = 0;
+      let stripeIdx = 0;
+
+      while (dataWritten < b) {
+        let actions = [];
+        for (let i = 0; i < parityDisk && dataWritten < b; i++) {
+          actions.push({ disk: i, type: "data", label: dataLabels[dataWritten] });
+          dataWritten++;
+        }
+        actions.push({ disk: parityDisk, type: "parity", label: "P" + stripeIdx });
+        layoutSteps.push(actions);
+        stripeIdx++;
       }
     }
   }
@@ -787,8 +769,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ) {
       resetSimulation();
     }
-    if (disks.some((d) => d.status === "failed" && currentRaid === 0)) {
-      showToast("Cannot write to failed RAID 0 array.", "error");
+    if (disks.some((d) => d.status === "failed") && currentRaid === 0) {
+      showToast("Cannot write to a failed RAID 0 array.", "error");
       return;
     }
     isAnimating = true;
@@ -835,17 +817,16 @@ document.addEventListener("DOMContentLoaded", () => {
       let disk = disks[act.disk];
       let block = document.createElement("div");
       block.className = `block ${act.type}`;
-      block.textContent = act.label;
+      // Shorten label for narrow blocks
+      block.textContent = act.label.length > 6 ? act.label.slice(0, 6) : act.label;
 
       if (disk.status === "failed") {
         block.className = "block failed";
-        block.textContent = "X";
+        block.textContent = "✕";
       }
 
       disk.blocksDom.appendChild(block);
-
-      // Trigger layout reflow for animation
-      void block.offsetWidth;
+      void block.offsetWidth; // reflow for animation
       block.classList.add("visible");
     });
 
@@ -864,11 +845,9 @@ document.addEventListener("DOMContentLoaded", () => {
     disk.status = "failed";
     disk.dom.classList.add("failed");
 
-    // Turn existing blocks red
-    let blocks = disk.blocksDom.querySelectorAll(".block");
-    blocks.forEach((b) => {
+    disk.blocksDom.querySelectorAll(".block").forEach((b) => {
       b.className = "block visible failed";
-      b.textContent = "X";
+      b.textContent = "✕";
     });
 
     updateStatus();
@@ -878,37 +857,22 @@ document.addEventListener("DOMContentLoaded", () => {
     let failed = disks
       .map((d, i) => (d.status === "failed" ? i : -1))
       .filter((i) => i !== -1);
+
     if (failed.length === 0)
       return showToast("No failed disks to rebuild.", "error");
 
     if (currentRaid === 0)
-      return showToast("Cannot rebuild RAID 0. Data is lost.", "error");
-    if (currentRaid === 2 && failed.length > 1)
-      return showToast("RAID 2 cannot survive >1 disk failure.", "error");
-    if (currentRaid === 3 && failed.length > 1)
-      return showToast("RAID 3 cannot survive >1 disk failure.", "error");
-    if (currentRaid === 4 && failed.length > 1)
-      return showToast("RAID 4 cannot survive >1 disk failure.", "error");
-    if (currentRaid === 5 && failed.length > 1)
-      return showToast("RAID 5 cannot survive >1 disk failure.", "error");
-    if (currentRaid === 6 && failed.length > 2)
-      return showToast("RAID 6 cannot survive >2 disk failures.", "error");
-    if (currentRaid === 10) {
-      let lost = false;
-      for (let i = 0; i < disks.length; i += 2) {
-        if (disks[i].status === "failed" && disks[i + 1].status === "failed")
-          lost = true;
-      }
-      if (lost)
-        return showToast("Both mirrored disks failed. Data lost.", "error");
-    }
+      return showToast("Cannot rebuild RAID 0 — data is lost.", "error");
     if (currentRaid === 1 && failed.length > 1)
-      return showToast("RAID 1 data lost.", "error");
+      return showToast("Both RAID 1 mirrors failed — data is lost.", "error");
+    if (currentRaid === 2 && failed.length > 1)
+      return showToast("RAID 2 cannot survive more than 1 disk failure.", "error");
+    if (currentRaid === 3 && failed.length > 1)
+      return showToast("RAID 3 cannot survive more than 1 disk failure.", "error");
 
     stopAnim();
     isAnimating = false;
 
-    // Mark as rebuilding
     failed.forEach((idx) => {
       let disk = disks[idx];
       disk.status = "rebuilding";
@@ -919,12 +883,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
     updateStatus();
 
-    // Rebuild logic
+    // Collect rebuild steps — re-emit only the blocks that belonged to failed disks
     let rebuildSteps = [];
     for (let s = 0; s < currentStepIdx; s++) {
-      let actions = layoutSteps[s];
       let stepRebuilds = [];
-      actions.forEach((act) => {
+      layoutSteps[s].forEach((act) => {
         if (failed.includes(act.disk)) {
           stepRebuilds.push({
             disk: act.disk,
@@ -934,35 +897,32 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         }
       });
-      if (stepRebuilds.length > 0) {
-        rebuildSteps.push(stepRebuilds);
-      }
+      if (stepRebuilds.length > 0) rebuildSteps.push(stepRebuilds);
     }
 
     let rIdx = 0;
     function doRebuildStep() {
       if (rIdx >= rebuildSteps.length) {
+        // Finalise: restore healthy appearance
         failed.forEach((idx) => {
           let disk = disks[idx];
           disk.status = "healthy";
           disk.dom.classList.remove("rebuilding");
-          let blocks = disk.blocksDom.querySelectorAll(".block");
-          blocks.forEach((b) => {
+          disk.blocksDom.querySelectorAll(".block").forEach((b) => {
             let ot = b.dataset.orig;
             b.className = `block visible ${ot}`;
           });
         });
         updateStatus();
-        showToast("Array Rebuilt Successfully", "success");
+        showToast("Array rebuilt successfully.", "success");
         return;
       }
 
-      let actions = rebuildSteps[rIdx];
-      actions.forEach((act) => {
+      rebuildSteps[rIdx].forEach((act) => {
         let disk = disks[act.disk];
         let block = document.createElement("div");
         block.className = `block ${act.type}`;
-        block.textContent = act.label;
+        block.textContent = act.label.length > 6 ? act.label.slice(0, 6) : act.label;
         block.dataset.orig = act.origType;
         disk.blocksDom.appendChild(block);
         void block.offsetWidth;
@@ -989,33 +949,18 @@ document.addEventListener("DOMContentLoaded", () => {
       statStatus.style.color = "var(--accent-green)";
     } else if (rebuildCount > 0) {
       raidStatusBar.classList.add("rebuilding");
-      raidStatusBar.textContent = "Array Status: Rebuilding...";
+      raidStatusBar.textContent = "Array Status: Rebuilding…";
       statStatus.textContent = "Rebuilding";
       statStatus.style.color = "#ca8a04";
     } else {
       let isCatastrophic = false;
-      if (currentRaid === 0 && failedCount > 0) isCatastrophic = true;
-      if (
-        (currentRaid === 2 ||
-          currentRaid === 3 ||
-          currentRaid === 4 ||
-          currentRaid === 5) &&
-        failedCount > 1
-      )
-        isCatastrophic = true;
-      if (currentRaid === 6 && failedCount > 2) isCatastrophic = true;
+      if (currentRaid === 0) isCatastrophic = true;
+      if ((currentRaid === 2 || currentRaid === 3) && failedCount > 1) isCatastrophic = true;
       if (currentRaid === 1 && failedCount > 1) isCatastrophic = true;
-      if (currentRaid === 10) {
-        for (let i = 0; i < disks.length; i += 2) {
-          if (disks[i].status === "failed" && disks[i + 1].status === "failed")
-            isCatastrophic = true;
-        }
-      }
 
       if (isCatastrophic) {
         raidStatusBar.classList.add("failed");
-        raidStatusBar.textContent =
-          "Array Status: CATASTROPHIC FAILURE (Data Lost)";
+        raidStatusBar.textContent = "Array Status: CATASTROPHIC FAILURE — Data Lost";
         statStatus.textContent = "Failed";
         statStatus.style.color = "var(--accent-red)";
       } else {
@@ -1032,10 +977,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!tc) return;
     const toast = document.createElement("div");
     toast.className = `toast toast-${type}`;
-    let icon =
-      type === "success"
-        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
-        : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+    let icon = type === "success"
+      ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-green)" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'
+      : '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
     toast.innerHTML = `${icon} <span>${msg}</span>`;
     tc.appendChild(toast);
     requestAnimationFrame(() => {
@@ -1051,7 +995,6 @@ document.addEventListener("DOMContentLoaded", () => {
   updateMetrics();
   resetSimulation();
 });
-
   </script>
 </body>
 </html>
