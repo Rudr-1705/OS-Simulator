@@ -140,7 +140,7 @@ OS-simulator-v2/
 
 ## Deployment
 
-The site is **live on GitHub Pages**: [https://rvbilimagga.github.io/OS-simulator-v2/](https://rvbilimagga.github.io/OS-simulator-v2/)
+The site is **live on GitHub Pages**: [https://rudr-1705.github.io/OS-Simulator/](https://rudr-1705.github.io/OS-Simulator/)
 
 This repo is a **static site**. To update what visitors see, push to `main`; Pages will rebuild automatically.
 
@@ -149,7 +149,7 @@ This repo is a **static site**. To update what visitors see, push to `main`; Pag
 1. Push to GitHub:
 
    ```bash
-   git remote add origin https://github.com/RVBilimagga/OS-simulator-v2.git
+   git remote add origin https://github.com/Rudr-1705/OS-simulator.git
    git branch -M main
    git push -u origin main
    ```
